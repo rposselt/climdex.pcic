@@ -123,10 +123,6 @@ public:
   }
 
   vector<IdxDupflagPair> get_index_tuples(const vector<vector<IdxDayPair> >& yrs_index, const int rm_year, const int dup_year, const int day) {
-    const int day_check_lower = half_win;
-    const int day_check_upper = dpy - half_win - 1;
-    const int min_day = 0;
-    const int max_day = dpy - 1;
     vector<IdxDupflagPair> df_pairs(yrs_index[rm_year].size() + yrs_index[dup_year].size() + half_win + 1);
   
     int df_idx = 0;
@@ -188,7 +184,7 @@ RcppExport SEXP c_quantile2(SEXP data_, SEXP quantile_) {
   NumericVector res(nq);
   
   for(int i = 0; i < nq; ++i)
-    res[i] = c_quantile(data.begin(), n, q[i]);
+    res[i] = c_quantile(const_cast<NumericVector&>(data).begin(), n, q[i]);
   
   return res;
 }
