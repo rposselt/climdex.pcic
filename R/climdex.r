@@ -46,7 +46,7 @@ valid.climdexInput <- function(x) {
   prec.quantiles <- c(95, 99)
   errors <- c()
 
-  separate.base <- c(tmax=T, tmin=T, tavg=T, prec=F)
+  #separate.base <- c(tmax=T, tmin=T, tavg=T, prec=F)
   present.data.vars <- names(x@data)
   length.check.slots <- c("dates", "jdays")
   length.check.members <- c("date.factors", "data")
@@ -57,8 +57,10 @@ valid.climdexInput <- function(x) {
     errors <- c(errors, "Data fields, dates, and date factors must all be of the same length")
 
   ## Check that namasks have columns for each of the variables
-  if(!all(c("annual", "monthly") %in% names(x@namasks)) || !all(present.data.vars %in% names(x@namasks$annual) & present.data.vars %in% names(x@namasks$monthly)))
-    errors <- c(errors, "NA mask for monthly and annual must contain data for all variables supplied.")
+  if(!all(c("annual", "halfyear", "seasonal", "monthly") %in% names(x@namasks)) || 
+       !all(present.data.vars %in% names(x@namasks$annual) & present.data.vars %in% names(x@namasks$halfyear) &
+              present.data.vars %in% names(x@namasks$seasonal) & present.data.vars %in% names(x@namasks$monthly)))
+    errors <- c(errors, "NA mask for monthly, seasonal, halfyear and annual must contain data for all variables supplied.")
 
   ## Check that appropriate thresholds are present.
   need.base.data <- get.num.days.in.range(x@dates, x@base.range) > 0
@@ -281,7 +283,20 @@ get.num.days.in.range <- function(x, date.range) {
 
 
 ## Check that arguments to climdexInput.raw et al are complete enough and valid enough.
-check.basic.argument.validity <- function(tmax, tmin, prec, tmax.dates, tmin.dates, prec.dates, base.range=c(1961, 1990), n=5, tavg=NULL, tavg.dates=NULL) {
+check.basic.argument.validity <- function(tmax, tmax.dates,
+                                          tmin, tmin.dates, 
+                                          tavg=NULL, tavg.dates=NULL,
+                                          prec, prec.dates, 
+                                          snow, snow.dates,
+                                          snow_new, snow_new.dates,
+                                          wind, wind.dates,
+                                          wind_gust, wind_gust.dates,
+                                          wind_dir, wind_dir.dates,
+                                          cloud, cloud.dates,
+                                          sun, sun.dates,
+                                          sun_rel, sun_rel.dates,
+                                          base.range=c(1961, 1990), n=5) {
+  
   check.var <- function(var, var.dates, var.name) {
     if(is.null(var) != is.null(var.dates))
       stop(paste("If passing in", var, ", must pass in", var, "dates too.."))
@@ -297,8 +312,21 @@ check.basic.argument.validity <- function(tmax, tmin, prec, tmax.dates, tmin.dat
   check.var(tmin, tmin.dates, "tmin")
   check.var(tavg, tavg.dates, "tavg")
   check.var(prec, prec.dates, "prec")
+  check.var(snow, snow.dates, "snow")
+  check.var(snow_new, snow_new.dates, "snow_new")
+  check.var(wind, wind.dates, "wind")
+  check.var(wind_gust, wind_gust.dates, "wind_gust")
+  check.var(wind_dir, wind_dir.dates, "wind_dir")
+  check.var(cloud, cloud.dates, "cloud")
+  check.var(sun, sun.dates, "sun")
+  check.var(sun_rel, sun_rel.dates, "sun_rel")
 
-  if(all(c(is.null(tmax), is.null(tmin), is.null(prec), is.null(tavg))))
+  if(all(c(is.null(tmax), is.null(tmin), is.null(tavg), 
+           is.null(prec), 
+           is.null(snow), is.null(snow_new),
+           is.null(wind), is.null(wind_gust), is.null(wind_dir), 
+           is.null(cloud),
+           is.null(sun),is.null(sun_rel))))
     stop("Must supply at least one variable to calculate indices upon.")
 
   if(!(length(base.range) == 2 && is.numeric(base.range)))
@@ -321,11 +349,14 @@ check.quantile.validity <- function(quantiles, present.vars, days.in.base) {
   
   if(!all(present.vars %in% names(quantiles)))
     stop("Quantiles must be present for all variables provided.\n")
-
-  if(!all(sapply(quantiles[names(quantiles) %in% intersect(present.vars, c("tmax", "tmin"))], function(x) { "outbase" %in% names(x) && all(c("q10", "q90") %in% names(x$outbase)) })))
+  
+  if(!all(sapply(quantiles[names(quantiles) %in% intersect(present.vars, c("tmax", "tmin"))],
+                 function(x) { "outbase" %in% names(x) && all(c("q10", "q90") %in% names(x$outbase))})))
     stop("Temperature out-of-base quantiles must contain 10th and 90th percentiles.\n")
 
-  if(any(days.in.base > 0) && !all(sapply(quantiles[names(quantiles) %in% intersect(intersect(present.vars, c("tmax", "tmin")), names(days.in.base)[days.in.base > 0])], function(x) { "inbase" %in% names(x) && all(c("q10", "q90") %in% names(x$inbase)) })))
+  if(any(days.in.base > 0) && 
+       !all(sapply(quantiles[names(quantiles) %in% intersect(intersect(present.vars, c("tmax", "tmin")), names(days.in.base)[days.in.base > 0])], 
+                   function(x) { "inbase" %in% names(x) && all(c("q10", "q90") %in% names(x$inbase)) })))
     stop("Temperature in-base quantiles must contain 10th and 90th percentiles.\n")
 
   if("prec" %in% names(quantiles) && !all(c("q95", "q99") %in% names(quantiles$prec)))
@@ -538,16 +569,47 @@ get.outofbase.quantiles <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=
 #' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
 #'
 #' @export
-climdexInput.raw <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=NULL, tmin.dates=NULL, prec.dates=NULL,
+climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL, 
+                             tmin=NULL, tmin.dates=NULL, 
+                             tavg=NULL, tavg.dates=NULL, 
+                             prec=NULL, prec.dates=NULL,
+                             snow=NULL, snow.dates=NULL,
+                             snow_new=NULL, snow_new.dates=NULL, 
+                             wind=NULL, wind.dates=NULL,
+                             wind_gust=NULL, wind_gust.dates=NULL,      
+                             wind_dir=NULL, wind_dir.dates=NULL,   
+                             cloud=NULL, cloud.dates=NULL,    
+                             sun=NULL, sun.dates=NULL,   
+                             sun_rel=NULL, sun_rel.dates=NULL,                       
+                             quantiles=NULL, temp.qtiles=c(0.10, 0.90), prec.qtiles=c(0.95, 0.99), 
                              base.range=c(1961, 1990), n=5, northern.hemisphere=TRUE,
-                             tavg=NULL, tavg.dates=NULL, quantiles=NULL, temp.qtiles=c(0.10, 0.90), prec.qtiles=c(0.95, 0.99), max.missing.days=c(annual=15, monthly=3), min.base.data.fraction.present=0.1) {
+                             max.missing.days=c(annual=15, halfyear=10, seasonal=8, monthly=3), 
+                             min.base.data.fraction.present=0.1) {
   ## Make sure all of these arguments are valid...
-  check.basic.argument.validity(tmax, tmin, prec, tmax.dates, tmin.dates, prec.dates, base.range, n, tavg, tavg.dates)
+  check.basic.argument.validity(tmax, tmax.dates, 
+                                tmin, tmin.dates, 
+                                tavg, tavg.dates,
+                                prec, prec.dates,
+                                snow, snow.dates,
+                                snow_new, snow_new.dates,
+                                wind, wind.dates,
+                                wind_gust, wind_gust.dates,
+                                wind_dir, wind_dir.dates,
+                                cloud, cloud.dates,
+                                sun, sun.dates,
+                                sun_rel, sun_rel.dates,
+                                base.range, n)
 
-  stopifnot(length(max.missing.days) == 2 && all(c("annual", "monthly") %in% names(max.missing.days)))
+  stopifnot(length(max.missing.days) == 4 && 
+              all(c("annual", "halfyear", "seasonal", "monthly") %in% names(max.missing.days)))
   stopifnot(is.numeric(min.base.data.fraction.present) && length(min.base.data.fraction.present) == 1)
   
-  d.list <- list(tmin.dates, tmax.dates, prec.dates, tavg.dates)
+  d.list <- list(tmin.dates, tmax.dates, tavg.dates, 
+                 prec.dates, 
+                 snow.dates, snow_new.dates,
+                 wind.dates, wind_gust.dates, wind_dir.dates,
+                 cloud.dates,
+                 sun.dates, sun_rel.dates)
   all.dates <- do.call(c, d.list[!sapply(d.list, is.null)])
   last.day.of.year <- get.last.monthday.of.year(all.dates)
   cal <- attr(all.dates, "cal")
@@ -557,17 +619,40 @@ climdexInput.raw <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=NULL, t
   bs.date.series <- seq(bs.date.range[1], bs.date.range[2], by="day")
   
   ## Get dates for normal data
-  new.date.range <- as.PCICt(paste(as.numeric(format(range(all.dates), "%Y", tz="GMT")), c("01-01", last.day.of.year), sep="-"), cal=cal)
+  new.date.range <- as.PCICt(paste(as.numeric(format(range(all.dates), "%Y", tz="GMT")), 
+                                   c("01-01", last.day.of.year), sep="-"), cal=cal)
   date.series <- seq(new.date.range[1], new.date.range[2], by="day")
   jdays <- get.jdays.replaced.feb29(get.jdays(date.series))
   
   ## Factors for dividing data up
-  date.factors <- list(annual=factor(format(date.series, format="%Y", tz="GMT")), monthly=factor(format(date.series, format="%Y-%m", tz="GMT")))
+  date.months <- as.numeric(format(date.series, format="%m", tz="GMT"))
+  date.years  <- as.numeric(format(date.series, format="%Y", tz="GMT"))
+  # get factors for seasons
+  # dec of prev year and jan&feb of next year belong together
+  seas.years <- date.years
+  seas.seas  <- (date.months+1) %/% 3
+  seas.idx   <- which(seas.seas == 0)
+  seas.years[seas.idx] <- seas.years[seas.idx]-1
+  seas.seas[seas.idx]  <- 4
+  # get factors for half years (winter (ONDJFM) & summer (APJJAS))
+  half.years <- date.years
+  half.half  <- (date.months+2) %/% 6
+  half.idx   <- which(half.half == 0)
+  half.years[half.idx] <- half.years[half.idx]-1
+  half.half[half.idx]  <- 2
+  # set up date.factors list
+  date.factors <- list(annual=factor(format(date.series, format="%Y", tz="GMT")), 
+                       halfyear=factor(paste(half.years,half.half,sep="-")),
+                       seasonal=factor(paste(seas.years,seas.seas,sep="-")),
+                       monthly=factor(format(date.series, format="%Y-%m", tz="GMT")))
 
   ## Filled data...
-  var.list <- c("tmax", "tmin", "prec", "tavg")
+  var.list <- c("tmax", "tmin", "tavg", "prec", "snow", "snow_new", "wind", "wind_gust", "wind_dir", 
+                "cloud", "sun", "sun_rel")
   present.var.list <- var.list[sapply(var.list, function(x) !is.null(get(x)))]
-  filled.list <- sapply(present.var.list, function(x) { return(create.filled.series(get(x), trunc(get(paste(x, "dates", sep="."))), date.series)) }, simplify=FALSE)
+  filled.list <- sapply(present.var.list, function(x) { 
+                          return(create.filled.series(get(x), trunc(get(paste(x, "dates", sep="."))), date.series)) }, 
+                        simplify=FALSE)
   if(is.null(tavg) && !is.null(tmin) && !is.null(tmax))
     filled.list$tavg <- (filled.list$tmax + filled.list$tmin) / 2
 
@@ -584,8 +669,15 @@ climdexInput.raw <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=NULL, t
   have.quantiles <- all(present.var.list %in% names(quantiles))
 
   ## NA masks
-  namasks <- list(annual=lapply(filled.list, get.na.mask, date.factors$annual, max.missing.days['annual']), monthly=lapply(filled.list, get.na.mask, date.factors$monthly, max.missing.days['monthly']))
-  namasks$annual <- lapply(names(namasks$annual), function(v) { d <- namasks$annual[[v]] * as.numeric(tapply(namasks$monthly[[v]], rep(seq_along(namasks$annual[[v]]), each=12), prod)); dimnames(d) <- dim(d) <- NULL; d })
+  namasks <- list(annual=lapply(filled.list, get.na.mask, date.factors$annual, max.missing.days['annual']), 
+                  halfyear=lapply(filled.list, get.na.mask, date.factors$halfyear, max.missing.days['halfyear']),
+                  seasonal=lapply(filled.list, get.na.mask, date.factors$seasonal, max.missing.days['seasonal']),
+                  monthly=lapply(filled.list, get.na.mask, date.factors$monthly, max.missing.days['monthly']))
+  namasks$annual <- lapply(names(namasks$annual), function(v) { 
+    d <- namasks$annual[[v]] * as.numeric(tapply(namasks$monthly[[v]], 
+                                                 rep(seq_along(namasks$annual[[v]]), each=12), prod)); 
+    dimnames(d) <- dim(d) <- NULL; d }
+    )
   names(namasks$annual) <- names(namasks$monthly)
   
   ## Pad data passed as base if we're missing endpoints...
@@ -601,7 +693,6 @@ climdexInput.raw <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=NULL, t
   } else {
     quantiles <- as.environment(quantiles)
   }
-  
   return(new("climdexInput", data=filled.list, quantiles=quantiles, namasks=namasks, dates=date.series, jdays=jdays, base.range=bs.date.range, date.factors=date.factors, northern.hemisphere=northern.hemisphere, max.missing.days=max.missing.days))
 }
 
@@ -672,32 +763,69 @@ climdexInput.raw <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=NULL, t
 #' prec.filename, date.types=list(list(fields=c("date"), format="%Y-%m-%d")))}
 #'
 #' @export
-climdexInput.csv <- function(tmax.file=NULL, tmin.file=NULL, prec.file=NULL,
-                             data.columns=list(tmin="tmin", tmax="tmax", prec="prec"), base.range=c(1961, 1990),
-                             na.strings=NULL, cal="gregorian", date.types=NULL, n=5, northern.hemisphere=TRUE,
-                             tavg.file=NULL, quantiles=NULL, temp.qtiles=c(0.10, 0.90), prec.qtiles=c(0.95, 0.99), max.missing.days=c(annual=15, monthly=3), min.base.data.fraction.present=0.1) {
+climdexInput.csv <- function(tmax.file=NULL, tmin.file=NULL, tavg.file=NULL, prec.file=NULL, 
+                             snow.file=NULL, snow_new.file=NULL,
+                             wind.file=NULL, wind_gust.file=NULL, wind_dir.file=NULL,
+                             cloud.file=NULL,
+                             sun.file=NULL, sun_rel.file=NULL,
+                             data.columns=list(tmin="tmin", tmax="tmax", tavg="tavg", 
+                                               prec="prec", 
+                                               snow="snow", snow_new="snow_new",
+                                               wind="wind", wind_gust="wind_gust", wind_dir="wind_dir",
+                                               cloud="cloud",
+                                               sun="sun", sun_rel="sun_rel"), 
+                             base.range=c(1961, 1990),
+                             na.strings=NULL, cal="gregorian", 
+                             date.types=NULL, n=5, northern.hemisphere=TRUE,
+                             quantiles=NULL, temp.qtiles=c(0.10, 0.90), prec.qtiles=c(0.95, 0.99), 
+                             max.missing.days=c(annual=15, halfyear=10, seasonal=8, monthly=3), 
+                             min.base.data.fraction.present=0.1) {
+  
   get.and.check.data <- function(fn, datacol) {
     if(!is.null(fn)) {
       dat <- read.csv(fn, na.strings=na.strings)
-      if(!(datacol %in% names(dat)))
-        stop("Data column not found in tmin data.")
+      if(!(datacol %in% names(dat))) stop(paste("Data column not found in",datacol,"data."))
       return(list(dat=dat[!is.na(dat[,datacol]),datacol],  dates=get.date.field(dat, cal, date.types)))
     }
     return(list(dat=NULL, dates=NULL))
   }
+  
   if(missing(date.types))
     date.types <- list(list(fields=c("year", "jday"), format="%Y %j"),
                        list(fields=c("year", "month", "day"), format="%Y %m %d"))
   else
-    if(any(!sapply(date.types, function(x) { return(sum(c("fields", "format") %in% names(x)) == 2 && is.character(x$fields) && is.character(x$format)) } )))
+    if(any(!sapply(date.types, function(x) { return(sum(c("fields", "format") %in% names(x)) == 2 && 
+                                                      is.character(x$fields) && is.character(x$format)) } )))
       stop("Invalid date.types specified. See ?climdexInput.csv .")
 
   tmin <- get.and.check.data(tmin.file, data.columns$tmin)
   tmax <- get.and.check.data(tmax.file, data.columns$tmax)
   tavg <- get.and.check.data(tavg.file, data.columns$tavg)
   prec <- get.and.check.data(prec.file, data.columns$prec)
+  snow <- get.and.check.data(snow.file, data.columns$snow)
+  snow_new <- get.and.check.data(snow_new.file, data.columns$snow_new)
+  wind <- get.and.check.data(wind.file, data.columns$wind)
+  wind_gust <- get.and.check.data(wind_gust.file, data.columns$wind_gust)
+  wind_dir <- get.and.check.data(wind_dir.file, data.columns$wind_dir)
+  cloud <- get.and.check.data(cloud.file, data.columns$cloud)
+  sun <- get.and.check.data(sun.file, data.columns$sun)
+  sun_rel <- get.and.check.data(sun_rel.file, data.columns$sun_rel)
   
-  return(climdexInput.raw(tmax=tmax$dat, tmin=tmin$dat, prec=prec$dat, tmax.dates=tmax$dates, tmin.dates=tmin$dates, prec.dates=prec$dates, base.range=base.range, n=n, northern.hemisphere=northern.hemisphere, tavg=tavg$dat, tavg.dates=tavg$dates, quantiles=quantiles, temp.qtiles=temp.qtiles, prec.qtiles=prec.qtiles, max.missing.days=max.missing.days, min.base.data.fraction.present=min.base.data.fraction.present))
+  return(climdexInput.raw(tmax=tmax$dat, tmax.dates=tmax$dates, 
+                          tmin=tmin$dat, tmin.dates=tmin$dates, 
+                          tavg=tavg$dat, tavg.dates=tavg$dates, 
+                          prec=prec$dat, prec.dates=prec$dates, 
+                          snow=snow$dat, snow.dates=snow$dates, 
+                          snow_new=snow_new$dat, snow_new.dates=snow_new$dates,
+                          wind=wind$dat, wind.dates=wind$dates, 
+                          wind_gust=wind_gust$dat, wind_gust.dates=wind_gust$dates, 
+                          wind_dir=wind_dir$dat, wind_dir.dates=wind_dir$dates, 
+                          cloud=cloud$dat, cloud.dates=cloud$dates,
+                          sun=sun$dat, sun.dates=sun$dates,
+                          sun_rel=sun_rel$dat, sun_rel.dates=sun_rel$dates,
+                          base.range=base.range, n=n, northern.hemisphere=northern.hemisphere, 
+                          quantiles=quantiles, temp.qtiles=temp.qtiles, prec.qtiles=prec.qtiles, 
+                          max.missing.days=max.missing.days, min.base.data.fraction.present=min.base.data.fraction.present))
 }
 
 #' Frost Days
@@ -1024,7 +1152,12 @@ climdex.tx90p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(
 #' @template get_generic_example
 #' 
 #' @export
-climdex.wsdi <- function(ci, spells.can.span.years=FALSE) { stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax)); return(threshold.exceedance.duration.index(ci@data$tmax, ci@date.factors$annual, ci@jdays, ci@quantiles$tmax$outbase$q90, ">", spells.can.span.years=spells.can.span.years, max.missing.days=ci@max.missing.days['annual']) * ci@namasks$annual$tmax) }
+climdex.wsdi <- function(ci, spells.can.span.years=FALSE) { 
+  stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax)); 
+  return(threshold.exceedance.duration.index(ci@data$tmax, ci@date.factors$annual, 
+                                             ci@jdays, ci@quantiles$tmax$outbase$q90, ">", 
+                                             spells.can.span.years=spells.can.span.years, 
+                                             max.missing.days=ci@max.missing.days['annual']) * ci@namasks$annual$tmax) }
 
 #' @title Cold Spell Duration Index
 #' 
@@ -1050,7 +1183,12 @@ climdex.wsdi <- function(ci, spells.can.span.years=FALSE) { stopifnot(!is.null(c
 #' @template get_generic_example
 #' 
 #' @export
-climdex.csdi <- function(ci, spells.can.span.years=FALSE) { stopifnot(!is.null(ci@data$tmin) && !is.null(ci@quantiles$tmin)); return(threshold.exceedance.duration.index(ci@data$tmin, ci@date.factors$annual, ci@jdays, ci@quantiles$tmin$outbase$q10, "<", spells.can.span.years=spells.can.span.years, max.missing.days=ci@max.missing.days['annual']) * ci@namasks$annual$tmin) }
+climdex.csdi <- function(ci, spells.can.span.years=FALSE) { 
+  stopifnot(!is.null(ci@data$tmin) && !is.null(ci@quantiles$tmin)); 
+  return(threshold.exceedance.duration.index(ci@data$tmin, ci@date.factors$annual, 
+                                             ci@jdays, ci@quantiles$tmin$outbase$q10, "<", 
+                                             spells.can.span.years=spells.can.span.years, 
+                                             max.missing.days=ci@max.missing.days['annual']) * ci@namasks$annual$tmin) }
 
 #' Mean Diurnal Temperature Range
 #' 
@@ -1278,6 +1416,7 @@ climdex.r99ptot <- function(ci) { stopifnot(!is.null(ci@data$prec) && !is.null(c
 #' @export
 climdex.prcptot <- function(ci) { stopifnot(!is.null(ci@data$prec)); return(total.precip.op.threshold(ci@data$prec, ci@date.factors$annual, 1, ">=") * ci@namasks$annual$prec) }
 
+#' 
 #' Get available indices by name
 #'
 #' This function returns a vector of (function) names of available indices.
@@ -1316,7 +1455,16 @@ climdex.get.available.indices <- function(ci, function.names=TRUE) {
   available.indices <- list(tmax=c('su', 'id', 'txx', 'txn', 'tx10p', 'tx90p', 'wsdi'),
                             tmin=c('fd', 'tr', 'tnx', 'tnn', 'tn10p', 'tn90p', 'csdi'),
                             tavg=c('gsl', 'dtr'),
-                            prec=c('rx1day', 'rx5day', 'sdii', 'r10mm', 'r20mm', 'rnnmm', 'cdd', 'cwd', 'r95ptot', 'r99ptot', 'prcptot'))
+                            prec=c('rx1day', 'rx5day', 'sdii', 'r10mm', 'r20mm', 'rnnmm', 'cdd', 'cwd', 'r95ptot', 'r99ptot', 'prcptot'),
+                            snow=c('snow_days','snow_max','snow_mean'),
+                            snow_new=c('snow_daysnew','snow_maxnew','snow_sumnew'),
+                            wind=c("wind_mean","wind_calmdays","wind_windydays"),
+                            wind_gust=c('wind_stormdays','wind_maxgust'),
+                            wind_dir=c('wind_northerly','wind_easterly','wind_southerly','wind_westerly'),
+                            cloud=c('cloud_mean','cloud_cloudy','cloud_sunny'),
+                            sun=c("sun_duration"),
+                            sun_rel=c("sun_cloudy","sun_sunny","sun_relmean"))
+  
   if(function.names) {
     return(paste("climdex", unlist(available.indices[names(ci@data)]), sep="."))
   } else {
@@ -1629,7 +1777,8 @@ percent.days.op.threshold <- function(temp, dates, jdays, date.factor, threshold
 #' rep(1:5, 2), rep(1, 5), ">=", 2, FALSE, 1)
 #' 
 #' @export
-threshold.exceedance.duration.index <- function(daily.temp, date.factor, jdays, thresholds, op=">", min.length=6, spells.can.span.years=TRUE, max.missing.days) {
+threshold.exceedance.duration.index <- function(daily.temp, date.factor, jdays, thresholds, op=">", 
+                                                min.length=6, spells.can.span.years=TRUE, max.missing.days) {
   stopifnot(is.numeric(c(daily.temp, thresholds, min.length)), is.factor(date.factor),
             is.function(match.fun(op)),
             min.length > 0)
@@ -1641,7 +1790,9 @@ threshold.exceedance.duration.index <- function(daily.temp, date.factor, jdays, 
     return(tapply.fast(periods, date.factor, sum) * na.mask)
   } else {
     ## fclimdex behaviour...
-    return(tapply.fast(1:length(daily.temp), date.factor, function(idx) { sum(select.blocks.gt.length(f(daily.temp[idx], thresholds[jdays[idx]]), min.length - 1)) } ) * na.mask)
+    return(tapply.fast(1:length(daily.temp), date.factor, 
+                       function(idx) { sum(select.blocks.gt.length(f(daily.temp[idx], 
+                                                                     thresholds[jdays[idx]]), min.length - 1)) } ) * na.mask)
   }
 }
 
