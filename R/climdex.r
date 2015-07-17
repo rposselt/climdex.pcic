@@ -628,13 +628,14 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
   date.months <- as.numeric(format(date.series, format="%m", tz="GMT"))
   date.years  <- as.numeric(format(date.series, format="%Y", tz="GMT"))
   # get factors for seasons
-  # dec of prev year and jan&feb of next year belong together
+  # Winter month D of prev year and JF of next year belong together (thus reduce year of JF by one)
   seas.years <- date.years
   seas.seas  <- (date.months+1) %/% 3
   seas.idx   <- which(seas.seas == 0)
   seas.years[seas.idx] <- seas.years[seas.idx]-1
   seas.seas[seas.idx]  <- 4
   # get factors for half years (winter (ONDJFM) & summer (APJJAS))
+  # winter months OND of prev year and JFM of next year belong together (thus reduce year of JFM by one)
   half.years <- date.years
   half.half  <- (date.months+2) %/% 6
   half.idx   <- which(half.half == 0)
@@ -673,27 +674,51 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
                   halfyear=lapply(filled.list, get.na.mask, date.factors$halfyear, max.missing.days['halfyear']),
                   seasonal=lapply(filled.list, get.na.mask, date.factors$seasonal, max.missing.days['seasonal']),
                   monthly=lapply(filled.list, get.na.mask, date.factors$monthly, max.missing.days['monthly']))
-  namasks$annual <- lapply(names(namasks$annual), function(v) { 
-    d <- namasks$annual[[v]] * as.numeric(tapply(namasks$monthly[[v]], 
-                                                 rep(seq_along(namasks$annual[[v]]), each=12), prod)); 
-    dimnames(d) <- dim(d) <- NULL; d }
+  ## if there is a missing month in a year (season, halfyear), then set this year (season, halfyear) also to missing
+  for (na.freq in c("annual","halfyear","seasonal")){  
+    namasks[[na.freq]] <- lapply(names(namasks[[na.freq]]), function(v) {
+      ## get the lengths (in months) for each frequency period 
+      ## (e.g., for halfyear the lengths should be usually 6 months, except maybe for the start and end halfyear)
+      length.freq <- as.numeric(tapply(data.ci@date.factors$monthly,
+                                       data.ci@date.factors[[na.freq]],
+                                       function(x){uni.x<-unique(x)
+                                                   return(length(uni.x))},simplify=T))
+      ## the indeces for each of the frequency periods
+      ## with regard to the monthly time series 
+      ## (i.e., the index of the period is repeated n-month times per period)
+      index.freq <- unlist(apply(cbind(x=c(1:length(length.freq)),y=length.freq),c(1),
+                              function(x){return(rep(x[1],times=x[2]))}))
+      ## combine monthly NA time series with period NA time series
+      ## as soon as there are 0's around the result is 0 (i.e., NA)
+      ## --> as soon as there is one missing month the whole period is also marked as missing
+      d <- namasks[[na.freq]][[v]] * as.numeric(tapply(namasks$monthly[[v]], index.freq, prod))
+      ## remove all dimension names
+      dimnames(d) <- dim(d) <- NULL
+      ## return corrected NA time series
+      return(d) }
     )
-  names(namasks$annual) <- names(namasks$monthly)
+    names(namasks[[na.freq]]) <- names(namasks$monthly)    
+  }
   
   ## Pad data passed as base if we're missing endpoints...
   if(!have.quantiles) {
     quantiles <- new.env(parent=emptyenv())
 
     if(days.in.base['tmax'] > days.threshold)
-      delayedAssign("tmax", get.temp.var.quantiles(filled.list$tmax, date.series, bs.date.series, temp.qtiles, bs.date.range, n, TRUE, min.base.data.fraction.present), assign.env=quantiles)
+      delayedAssign("tmax", get.temp.var.quantiles(filled.list$tmax, date.series, bs.date.series, temp.qtiles, 
+                                                   bs.date.range, n, TRUE, min.base.data.fraction.present), assign.env=quantiles)
     if(days.in.base['tmin'] > days.threshold)
-      delayedAssign("tmin", get.temp.var.quantiles(filled.list$tmin, date.series, bs.date.series, temp.qtiles, bs.date.range, n, TRUE, min.base.data.fraction.present), assign.env=quantiles)
+      delayedAssign("tmin", get.temp.var.quantiles(filled.list$tmin, date.series, bs.date.series, temp.qtiles, 
+                                                   bs.date.range, n, TRUE, min.base.data.fraction.present), assign.env=quantiles)
     if(days.in.base['prec'] > days.threshold)
-      delayedAssign("prec", get.prec.var.quantiles(filled.list$prec, date.series, bs.date.range, prec.qtiles), assign.env=quantiles)
+      delayedAssign("prec", get.prec.var.quantiles(filled.list$prec, date.series, 
+                                                   bs.date.range, prec.qtiles), assign.env=quantiles)
   } else {
     quantiles <- as.environment(quantiles)
   }
-  return(new("climdexInput", data=filled.list, quantiles=quantiles, namasks=namasks, dates=date.series, jdays=jdays, base.range=bs.date.range, date.factors=date.factors, northern.hemisphere=northern.hemisphere, max.missing.days=max.missing.days))
+  return(new("climdexInput", data=filled.list, quantiles=quantiles, namasks=namasks, dates=date.series, 
+             jdays=jdays, base.range=bs.date.range, date.factors=date.factors, 
+             northern.hemisphere=northern.hemisphere, max.missing.days=max.missing.days))
 }
 
 #' @title Method for creating climdexInput object from CSV files
