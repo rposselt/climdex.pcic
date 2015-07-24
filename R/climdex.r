@@ -587,7 +587,7 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
                              min.base.data.fraction.present=0.1) {
   ## Make sure all of these arguments are valid...
   check.basic.argument.validity(tmax, tmax.dates, 
-                                tmin, tmin.dates, 
+                                tmin, tmin.dates,
                                 tavg, tavg.dates,
                                 prec, prec.dates,
                                 snow, snow.dates,
@@ -628,19 +628,19 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
   date.months <- as.numeric(format(date.series, format="%m", tz="GMT"))
   date.years  <- as.numeric(format(date.series, format="%Y", tz="GMT"))
   # get factors for seasons
-  # Winter month D of prev year and JF of next year belong together (thus reduce year of JF by one)
+  # Winter month D of prev year and JF of next year belong together, Year belongs to Jan => increase year of prev Dec by 1
   seas.years <- date.years
-  seas.seas  <- (date.months+1) %/% 3
-  seas.idx   <- which(seas.seas == 0)
-  seas.years[seas.idx] <- seas.years[seas.idx]-1
-  seas.seas[seas.idx]  <- 4
+  seas.seas  <- date.months %/% 3 + 1
+  seas.idx   <- which(seas.seas == 5)
+  seas.years[seas.idx] <- seas.years[seas.idx]+1
+  seas.seas[seas.idx]  <- 1
   # get factors for half years (winter (ONDJFM) & summer (APJJAS))
-  # winter months OND of prev year and JFM of next year belong together (thus reduce year of JFM by one)
+  # winter months OND of prev year and JFM of next year belong together, Year belongs to Jan => increase year of prev OND by 1
   half.years <- date.years
-  half.half  <- (date.months+2) %/% 6
+  half.half  <- (date.months+2) %/% 6 + 1
   half.idx   <- which(half.half == 0)
-  half.years[half.idx] <- half.years[half.idx]-1
-  half.half[half.idx]  <- 2
+  half.years[half.idx] <- half.years[half.idx]+1
+  half.half[half.idx]  <- 1
   # set up date.factors list
   date.factors <- list(annual=factor(format(date.series, format="%Y", tz="GMT")), 
                        halfyear=factor(paste(half.years,half.half,sep="-")),
@@ -679,8 +679,8 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
     namasks[[na.freq]] <- lapply(names(namasks[[na.freq]]), function(v) {
       ## get the lengths (in months) for each frequency period 
       ## (e.g., for halfyear the lengths should be usually 6 months, except maybe for the start and end halfyear)
-      length.freq <- as.numeric(tapply(data.ci@date.factors$monthly,
-                                       data.ci@date.factors[[na.freq]],
+      length.freq <- as.numeric(tapply(date.factors$monthly,
+                                       date.factors[[na.freq]],
                                        function(x){uni.x<-unique(x)
                                                    return(length(uni.x))},simplify=T))
       ## the indeces for each of the frequency periods
@@ -1015,7 +1015,11 @@ climdex.gsl <- function(ci, gsl.mode=c("GSL", "GSL_first", "GSL_max", "GSL_sum")
 #' @template get_generic_example
 #' 
 #' @export
-climdex.txx <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmax)); return(suppressWarnings(tapply.fast(ci@data$tmax, ci@date.factors[[match.arg(freq)]], max, na.rm=TRUE)) * ci@namasks[[match.arg(freq)]]$tmax) }
+climdex.txx <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmax))
+  return(suppressWarnings(tapply.fast(ci@data$tmax, ci@date.factors[[match.arg(freq)]], max, na.rm=TRUE)) * 
+           ci@namasks[[match.arg(freq)]]$tmax) 
+}
 
 #' Monthly Maximum of Daily Minimum Temperature
 #'
@@ -1033,7 +1037,11 @@ climdex.txx <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci
 #' @template get_generic_example
 #' 
 #' @export
-climdex.tnx <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmin)); return(suppressWarnings(tapply.fast(ci@data$tmin, ci@date.factors[[match.arg(freq)]], max, na.rm=TRUE)) * ci@namasks[[match.arg(freq)]]$tmin) }
+climdex.tnx <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmin))
+  return(suppressWarnings(tapply.fast(ci@data$tmin, ci@date.factors[[match.arg(freq)]], max, na.rm=TRUE)) * 
+           ci@namasks[[match.arg(freq)]]$tmin) 
+}
 
 #' Monthly Minimum of Daily Maximum Temperature
 #'
@@ -1051,7 +1059,11 @@ climdex.tnx <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci
 #' @template get_generic_example
 #' 
 #' @export
-climdex.txn <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmax)); return(suppressWarnings(tapply.fast(ci@data$tmax, ci@date.factors[[match.arg(freq)]], min, na.rm=TRUE)) * ci@namasks[[match.arg(freq)]]$tmax) }
+climdex.txn <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmax))
+  return(suppressWarnings(tapply.fast(ci@data$tmax, ci@date.factors[[match.arg(freq)]], min, na.rm=TRUE)) * 
+           ci@namasks[[match.arg(freq)]]$tmax) 
+}
 
 #' Monthly Minimum of Daily Minimum Temperature
 #'
@@ -1069,7 +1081,11 @@ climdex.txn <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci
 #' @template get_generic_example
 #' 
 #' @export
-climdex.tnn <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmin)); return(suppressWarnings(tapply.fast(ci@data$tmin, ci@date.factors[[match.arg(freq)]], min, na.rm=TRUE)) * ci@namasks[[match.arg(freq)]]$tmin) }
+climdex.tnn <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmin))
+  return(suppressWarnings(tapply.fast(ci@data$tmin, ci@date.factors[[match.arg(freq)]], min, na.rm=TRUE)) * 
+           ci@namasks[[match.arg(freq)]]$tmin) 
+}
 
 ## Our implementation currently follows the example set by fclimdex for dealing with missing values, which is wrong; it biases results upwards when missing values are present.
 
@@ -1091,7 +1107,12 @@ climdex.tnn <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci
 #' @template get_generic_example
 #' 
 #' @export
-climdex.tn10p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmin) && !is.null(ci@quantiles$tmin)); return(percent.days.op.threshold(ci@data$tmin, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], ci@quantiles$tmin$outbase$q10, ci@quantiles$tmin$inbase$q10, ci@base.range, "<", ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmin) }
+climdex.tn10p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmin) && !is.null(ci@quantiles$tmin))
+  return(percent.days.op.threshold(ci@data$tmin, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
+                                   ci@quantiles$tmin$outbase$q10, ci@quantiles$tmin$inbase$q10, ci@base.range, "<", 
+                                   ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmin) 
+}
 
 #' Percent of Values Below 10th Percentile Daily Maximum Temperature
 #' 
@@ -1111,7 +1132,12 @@ climdex.tn10p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(
 #' @template get_generic_example
 #' 
 #' @export
-climdex.tx10p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax)); return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], ci@quantiles$tmax$outbase$q10, ci@quantiles$tmax$inbase$q10, ci@base.range, "<", ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) }
+climdex.tx10p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax))
+  return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
+                                   ci@quantiles$tmax$outbase$q10, ci@quantiles$tmax$inbase$q10, ci@base.range, "<", 
+                                   ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) 
+}
 
 #' Percent of Values Above 90th Percentile Daily Minimum Temperature
 #' 
@@ -1131,7 +1157,12 @@ climdex.tx10p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(
 #' @template get_generic_example
 #' 
 #' @export
-climdex.tn90p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmin) && !is.null(ci@quantiles$tmin)); return(percent.days.op.threshold(ci@data$tmin, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], ci@quantiles$tmin$outbase$q90, ci@quantiles$tmin$inbase$q90, ci@base.range, ">", ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmin) }
+climdex.tn90p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmin) && !is.null(ci@quantiles$tmin))
+  return(percent.days.op.threshold(ci@data$tmin, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
+                                   ci@quantiles$tmin$outbase$q90, ci@quantiles$tmin$inbase$q90, ci@base.range, ">", 
+                                   ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmin) 
+}
 
 #' Percent of Values Above 90th Percentile Daily Maximum Temperature
 #' 
@@ -1151,7 +1182,12 @@ climdex.tn90p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(
 #' @template get_generic_example
 #' 
 #' @export
-climdex.tx90p <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax)); return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], ci@quantiles$tmax$outbase$q90, ci@quantiles$tmax$inbase$q90, ci@base.range, ">", ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) }
+climdex.tx90p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax))
+  return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
+                                   ci@quantiles$tmax$outbase$q90, ci@quantiles$tmax$inbase$q90, ci@base.range, ">", 
+                                   ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) 
+}
 
 #' @title Warm Spell Duration Index
 #'
@@ -1234,7 +1270,11 @@ climdex.csdi <- function(ci, spells.can.span.years=FALSE) {
 #' @template get_generic_example
 #' 
 #' @export
-climdex.dtr <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$tmin) && !is.null(ci@data$tmax) && !is.null(ci@data$tavg)); return(mean.daily.temp.range(ci@data$tmax, ci@data$tmin, ci@date.factors[[match.arg(freq)]]) * ci@namasks[[match.arg(freq)]]$tavg) }
+climdex.dtr <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$tmin) && !is.null(ci@data$tmax) && !is.null(ci@data$tavg))
+  return(mean.daily.temp.range(ci@data$tmax, ci@data$tmin, ci@date.factors[[match.arg(freq)]]) * 
+           ci@namasks[[match.arg(freq)]]$tavg) 
+}
 
 #' Monthly Maximum 1-day Precipitation
 #' 
@@ -1252,27 +1292,63 @@ climdex.dtr <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci
 #' @template get_generic_example
 #' 
 #' @export
-climdex.rx1day <- function(ci, freq=c("monthly", "annual")) { stopifnot(!is.null(ci@data$prec)); return(nday.consec.prec.max(ci@data$prec, ci@date.factors[[match.arg(freq)]], 1) * ci@namasks[[match.arg(freq)]]$prec) }
+climdex.rx1day <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
+  stopifnot(!is.null(ci@data$prec))
+  return(nday.consec.prec.max(ci@data$prec, ci@date.factors[[match.arg(freq)]], 1) * ci@namasks[[match.arg(freq)]]$prec) 
+}
 
-#' Monthly Maximum 5-day Consecutive Precipitation
+#' Monthly Maximum 5-day Precipitation
 #' 
 #' This function computes the climdex index Rx5day.
 #' 
 #' This function takes a climdexInput object as input and computes the climdex
-#' index Rx5day: monthly or annual maximum 5-day consecutive precipitation.
+#' index Rx5day: monthly or annual maximum 5-day precipitation.
 #' 
 #' @param ci Object of type climdexInput.
 #' @param freq Time frequency to aggregate to.
-#' @param center.mean.on.last.day Whether to center the 5-day running mean on
-#' the last day of the window, instead of the center day.
 #' @template rx5day_common
 #' @template generic_seealso_references
 #' @templateVar cdxvar rx5day
-#' @templateVar cdxdescription a timeseries of monthly maximum 5-day consecutive precipitation.
+#' @templateVar cdxdescription a timeseries of monthly maximum 5-day precipitation.
 #' @template get_generic_example
 #' 
 #' @export
-climdex.rx5day <- function(ci, freq=c("monthly", "annual"), center.mean.on.last.day=FALSE) { stopifnot(!is.null(ci@data$prec)); return(nday.consec.prec.max(ci@data$prec, ci@date.factors[[match.arg(freq)]], 5, center.mean.on.last.day) * ci@namasks[[match.arg(freq)]]$prec) }
+climdex.rx5day <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal"), center.mean.on.last.day=FALSE) { 
+  stopifnot(!is.null(ci@data$prec))
+  return(nday.consec.prec.max(ci@data$prec, ci@date.factors[[match.arg(freq)]], 5, center.mean.on.last.day) * 
+           ci@namasks[[match.arg(freq)]]$prec) 
+}
+
+#' Min/Max of mean n-day Min/Avg/Max.-Temperature
+#' 
+#' This function computes the climdex index Txndaymax, Txndaymin.
+#' 
+#' This function takes a climdexInput object as input and computes the climdex
+#' index T[x|m|n]nday[min|max]: min/max of mean n-day [max|avg|min] temperature.
+#' 
+#' @param ci Object of type climdexInput (representing daily Tmax/Tavg/Tmin).
+#' @param ndays number of days to consider (default=5).
+#' @param freq Time frequency to aggregate to (default="monthly").
+#' @param center.mean.on.last.day Whether to center the n-day running mean on
+#' the last day of the window, instead of the center day.
+#' @template generic_seealso_references
+#' @templateVar cdxvar txndaymax
+#' @templateVar cdxdescription min/max of mean n-day [max|avg|min] temperature.
+#' @template get_generic_example
+#' 
+#' @export
+climdex.txndaymax <- function(ci, ndays=5, freq=c("monthly", "annual", "halfyear", "seasonal"), center.mean.on.last.day=FALSE) { 
+  stopifnot(!is.null(ci@data$tmax))
+  return(nday.consec.temp.mean(ci@data$tmax, ci@date.factors[[match.arg(freq)]], 
+                               ndays=ndays, freq.fun="max", center.mean.on.last.day) * 
+           ci@namasks[[match.arg(freq)]]$tmax) 
+}
+climdex.txndaymin <- function(ci, ndays=5, freq=c("monthly", "annual", "halfyear", "seasonal"), center.mean.on.last.day=FALSE) { 
+  stopifnot(!is.null(ci@data$tmax))
+  return(nday.consec.temp.mean(ci@data$tmax, ci@date.factors[[match.arg(freq)]], 
+                               ndays=ndays, freq.fun="min", center.mean.on.last.day) * 
+           ci@namasks[[match.arg(freq)]]$tmax) 
+}
 
 #' Simple Precpitation Intensity Index
 #' 
@@ -1293,7 +1369,10 @@ climdex.rx5day <- function(ci, freq=c("monthly", "annual"), center.mean.on.last.
 #' @template get_generic_example
 #' 
 #' @export
-climdex.sdii <- function(ci) { stopifnot(!is.null(ci@data$prec)); return(simple.precipitation.intensity.index(ci@data$prec, ci@date.factors$annual) * ci@namasks$annual$prec) }
+climdex.sdii <- function(ci) { 
+  stopifnot(!is.null(ci@data$prec))
+  return(simple.precipitation.intensity.index(ci@data$prec, ci@date.factors$annual) * ci@namasks$annual$prec) 
+}
 
 #' Precipitation Exceeding 10mm Per Day
 #' 
@@ -1879,10 +1958,65 @@ nday.consec.prec.max <- function(daily.prec, date.factor, ndays, center.mean.on.
   prec.runsum <- runmean(daily.prec, k=ndays, endrule="NA")
   prec.runsum[is.na(prec.runsum)] <- 0
   if(center.mean.on.last.day) {
-      k2 = ndays %/% 2
-      prec.runsum <- c(rep(0, k2), prec.runsum[1:(length(prec.runsum) - k2)])
+    k2 = ndays %/% 2
+    prec.runsum <- c(rep(0, k2), prec.runsum[1:(length(prec.runsum) - k2)])
   }
   return(tapply.fast(prec.runsum, date.factor, max) * ndays)
+}
+
+#' @title Number of days (less than, greater than, etc) a threshold
+#' 
+#' @description
+#' Produces means of values that exceed (or are below) the specified threshold.
+#' 
+#' @details
+#' This function takes a data series, the number of days in the running window,
+#' a date factor to aggregate by, and an optional modifier parameter
+#' (center.mean.on.last.day). It computes the n-day running mean of
+#' temperature and returns the mean n-day temperature per unit
+#' time, as defined by \code{date.factor}.
+#' 
+#' @param daily.temp Daily timeseries of temperature (tmax, tavg or tmin).
+#' @param date.factor Factor to aggregate by.
+#' @param ndays Number of days in the running window.
+#' @param center.mean.on.last.day Whether to center the n-day running mean on
+#' the last day of the series, instead of the middle day.
+#' @return A vector consisting of the mean n-day temp per
+#' time interval.
+#' @keywords ts climate
+#' @examples
+#' library(PCICt)
+#' 
+#' ## Parse the dates into PCICt.
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
+#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
+#' "jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
+#' "jday")]), format="%Y %j", cal="gregorian")
+#' 
+#' ## Load the data in.
+#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
+#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' 
+#' ## Compute rx5day on a monthly basis.
+#' txnday <- nday.consec.temp.mean(ci@@data$tmax, ci@@date.factors$monthly, ndays=5)
+#' 
+#' @export
+nday.consec.temp.mean <- function(daily.temp, date.factor, ndays, freq.fun="max", center.mean.on.last.day=FALSE) {
+  if(ndays == 1) {
+    return(suppressWarnings(tapply.fast(daily.temp, date.factor, mean, na.rm=TRUE)))
+  }
+  ## Ends of the data will be de-emphasized (padded with zero precip data); NAs replaced with 0
+  daily.temp[is.na(daily.temp)] <- 0
+  temp.runmean <- runmean(daily.temp, k=ndays, endrule="NA")
+  temp.runmean[is.na(temp.runmean)] <- 0
+  if(center.mean.on.last.day) {
+      k2 = ndays %/% 2
+      temp.runmean <- c(rep(0, k2), temp.runmean[1:(length(temp.runmean) - k2)])
+  }
+  return(tapply.fast(temp.runmean, date.factor, match.fun(freq.fun)))
 }
 
 #' Simple Precipitation Intensity Index
