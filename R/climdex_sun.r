@@ -29,7 +29,7 @@ climdex.sun_duration <- function(ci,freq=c("annual","halfyear","seasonal","month
 #' This function takes a climdexInput object as input and computes the 
 #' SUN_RELMEAN index: The mean of the relative sunshine duration within a period.
 #' 
-#' @param ci Object of type climdexInput (representing the daily relative sunshine duration in [%])
+#' @param ci Object of type climdexInput (representing the daily relative sunshine duration in [\%])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the time series of the relative sunshine duration.
 #' @template generic_seealso_references 
@@ -48,14 +48,14 @@ climdex.sun_relmean <- function(ci,freq=c("annual","halfyear","seasonal","monthl
 #' This function computes the climdex index SUN_CLOUDY.
 #' 
 #' This function takes a climdexInput object as input and computes the 
-#' SUN_CLOUDY index: The number of mostly cloudy days (relative sunshine duration < 20 %) within a period.
+#' SUN_CLOUDY index: The number of mostly cloudy days (relative sunshine duration < 20 \%) within a period.
 #' 
-#' @param ci Object of type climdexInput (representing the daily relative sunshine duration in [%])
+#' @param ci Object of type climdexInput (representing the daily relative sunshine duration in [\%])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the number of mostly cloudy days.
 #' @template generic_seealso_references 
 #' @templateVar cdxvar wind
-#' @templateVar cdxdescription The number of mostly cloudy days (relative sunshine duration < 20 %) within a period.
+#' @templateVar cdxdescription The number of mostly cloudy days (relative sunshine duration < 20 \%) within a period.
 #' @template get_generic_example
 #' 
 #' @export
@@ -70,14 +70,14 @@ climdex.sun_cloudy <- function(ci,freq=c("annual","halfyear","seasonal","monthly
 #' This function computes the climdex index SUN_SUNNY.
 #' 
 #' This function takes a climdexInput object as input and computes the 
-#' SUN_SUNNY index: The number of mostly sunny days (relative sunshine duration > 80 %) within a period.
+#' SUN_SUNNY index: The number of mostly sunny days (relative sunshine duration > 80 \%) within a period.
 #' 
-#' @param ci Object of type climdexInput (representing the daily relative sunshine duration in [%])
+#' @param ci Object of type climdexInput (representing the daily relative sunshine duration in [\%])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the number of mostly sunny days.
 #' @template generic_seealso_references 
 #' @templateVar cdxvar wind
-#' @templateVar cdxdescription The number of mostly sunny days (relative sunshine duration > 80 %) within a period.
+#' @templateVar cdxdescription The number of mostly sunny days (relative sunshine duration > 80 \%) within a period.
 #' @template get_generic_example
 #' 
 #' @export
