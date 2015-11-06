@@ -10,7 +10,7 @@ climdex.pcic.test.intake.routines <- function() {
   prec.dat <- ec.1018935.prec$ONE_DAY_PRECIPITATION
   all.indices <- c('fd', 'su', 'id', 'tr', 'gsl', 'txx', 'tnx', 'txn', 'tnn', 'tn10p', 'tx10p', 'tn90p', 'tx90p', 'wsdi', 'csdi',
                    'dtr', 'rx1day', 'rx5day', 'sdii', 'r10mm', 'r20mm', 'rnnmm', 'cdd', 'cwd', 'r95ptot', 'r99ptot', 'prcptot')
-
+  
   threshold.indices.to.exclude.on.x86 <- c("tx10p", "tx90p", "wsdi", "tn10p", "tn90p", "csdi", "r95ptot", "r99ptot")
   is.x86 <- !(climdex.quantile(c(0, 1, 2), 0.3) == quantile(c(0, 1, 2), 0.3, type=8))
   
@@ -18,31 +18,34 @@ climdex.pcic.test.intake.routines <- function() {
     include.tmax <- i %% 2
     include.tmin <- floor(i / 2) %% 2
     include.prec <- floor(i / 4) %% 2
-    ci <- climdexInput.raw(if(include.tmax) tmax.dat else NULL,
-                           if(include.tmin) tmin.dat else NULL,
-                           if(include.prec) prec.dat else NULL,
-                           if(include.tmax) tmax.dates else NULL,
-                           if(include.tmin) tmin.dates else NULL,
-                           if(include.prec) prec.dates else NULL,
+    ci <- climdexInput.raw(tmax=if(include.tmax) tmax.dat else NULL,
+                           tmin=if(include.tmin) tmin.dat else NULL,
+                           prec=if(include.prec) prec.dat else NULL,
+                           tmax.dates=if(include.tmax) tmax.dates else NULL,
+                           tmin.dates=if(include.tmin) tmin.dates else NULL,
+                           prec.dates=if(include.prec) prec.dates else NULL,
                            base.range=c(1981, 1990))
-
-    outbase.thresholds <- get.outofbase.quantiles(if(include.tmax) tmax.dat else NULL,
-                           if(include.tmin) tmin.dat else NULL,
-                           if(include.prec) prec.dat else NULL,
-                           if(include.tmax) tmax.dates else NULL,
-                           if(include.tmin) tmin.dates else NULL,
-                           if(include.prec) prec.dates else NULL,
-                           base.range=c(1981, 1990))
-
-    ci.csv <- climdexInput.csv(if(include.tmax) "1018935_MAX_TEMP.csv" else NULL,
-                               if(include.tmin) "1018935_MIN_TEMP.csv" else NULL,
-                               if(include.prec) "1018935_ONE_DAY_PRECIPITATION.csv" else NULL,
+    
+    outbase.thresholds <- get.outofbase.quantiles(tmax=if(include.tmax) tmax.dat else NULL,
+                                                  tmin=if(include.tmin) tmin.dat else NULL,
+                                                  prec=if(include.prec) prec.dat else NULL,
+                                                  tmax.dates=if(include.tmax) tmax.dates else NULL,
+                                                  tmin.dates=if(include.tmin) tmin.dates else NULL,
+                                                  prec.dates=if(include.prec) prec.dates else NULL,
+                                                  base.range=c(1981, 1990))
+    
+    ci.csv <- climdexInput.csv(tmax.file=if(include.tmax) "1018935_MAX_TEMP.csv" else NULL,
+                               tmin.file=if(include.tmin) "1018935_MIN_TEMP.csv" else NULL,
+                               prec.file=if(include.prec) "1018935_ONE_DAY_PRECIPITATION.csv" else NULL,
                                data.columns=list(tmax="MAX_TEMP", tmin="MIN_TEMP", prec="ONE_DAY_PRECIPITATION"),
                                base.range=c(1981, 1990))
-
+    
     indices.to.check.equals <- climdex.get.available.indices(ci, function.names=FALSE)
     indices.to.check.error <- all.indices[!(all.indices %in% indices.to.check.equals)]
-
+    
+    ## exclude indeces for check.equals that are not in all.indices
+    indices.to.check.equals <- indices.to.check.equals[indices.to.check.equals %in% all.indices]
+    
     ## 80-bit vs 64-bit SSE floating point differences cause comparisons to fail, thanks
     ## to threshold-based comparisons amplifying the effect.
     if(is.x86)
@@ -56,7 +59,7 @@ climdex.pcic.test.intake.routines <- function() {
       checkEquals(valid.result, fun(ci), paste(index, "didn't match expected result: include.tmax is", include.tmax, ", include.tmin is ", include.tmin, ", include.prec is ", include.prec))
       checkEquals(valid.result, fun(ci.csv), paste(index, "didn't match expected result with CSV input: include.tmax is", include.tmax, ", include.tmin is ", include.tmin, ", include.prec is ", include.prec))
     }
-
+    
     print("Checking error...")
     for(index in indices.to.check.error) {
       print(index)
@@ -79,10 +82,10 @@ climdex.pcic.test.thresholds.edge.cases <- function() {
   ci <- climdexInput.raw(tmax=dat1, tmin=dat1, tmax.dates=dat1.dates, tmin.dates=dat1.dates, base.range=c(1970, 1970))
   ci2 <- climdexInput.raw(tmax=dat2, tmin=dat2, tmax.dates=dat2.dates, tmin.dates=dat2.dates, base.range=c(1970, 1971))
   ci3 <- climdexInput.raw(tmax=dat3, tmin=dat3, tmax.dates=dat3.dates, tmin.dates=dat3.dates, base.range=c(1970, 1971))
-
+  
   checkEquals(c(365, 1, 0), dim(ci@quantiles$tmax$inbase$q10))
   checkEquals(c(365, 2, 1), dim(ci2@quantiles$tmax$inbase$q10))
-
+  
   ## Specifically test the adding and masking of NA values with threshold-based indices.
   checkEquals(structure(NA_real_, .Names = "1972-06"), climdex.tx10p(ci3)[30])
   
@@ -101,9 +104,16 @@ climdex.pcic.test.climdex.gsl <- function() {
   tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year", "jday")]), format="%Y %j", cal="gregorian")
   tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year", "jday")]), format="%Y %j", cal="gregorian")
   prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year", "jday")]), format="%Y %j", cal="gregorian")
-
+  
   ## Load the data in.
-  ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP, ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION, tmax.dates, tmin.dates, prec.dates, base.range=c(1981, 1990), northern.hemisphere=FALSE)
-
+  ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP, 
+                         tmin=ec.1018935.tmin$MIN_TEMP, 
+                         prec=ec.1018935.prec$ONE_DAY_PRECIPITATION, 
+                         tmax.dates=tmax.dates, 
+                         tmin.dates=tmin.dates, 
+                         prec.dates=prec.dates, 
+                         base.range=c(1981, 1990), 
+                         northern.hemisphere=FALSE)
+  
   checkEquals(get('ec.1018935.gsl.sh'), climdex.gsl(ci))
 }

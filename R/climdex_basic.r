@@ -1,5 +1,3 @@
-
-
 #' @title Number of days (less than, greater than, etc) a threshold
 #' 
 #' @description
@@ -15,31 +13,35 @@
 #' @param daily.temp Daily timeseries of temperature (tmax, tavg or tmin).
 #' @param date.factor Factor to aggregate by.
 #' @param ndays Number of days in the running window.
+#' @param freq.fun Function to apply on the choosen period (e.g., max, min, ...)
 #' @param center.mean.on.last.day Whether to center the n-day running mean on
 #' the last day of the series, instead of the middle day.
 #' @return A vector consisting of the mean n-day temp per
 #' time interval.
 #' @keywords ts climate
+#' 
 #' @examples
 #' library(PCICt)
 #' 
 #' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year","jday")]), format="%Y %j", cal="gregorian")
 #' 
 #' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
-#' 
+#' ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP,
+#'                        tmin=ec.1018935.tmin$MIN_TEMP, 
+#'                        prec=ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#'                        tmax.dates=tmax.dates, 
+#'                        tmin.dates=tmin.dates, 
+#'                        prec.dates=prec.dates, 
+#'                        base.range=c(1971, 2000))
+#'
 #' ## Compute txnday on a monthly basis.
 #' tx5daymax <- nday.consec.temp.mean(ci@@data$tmax, ci@@date.factors$monthly, freq.fun="max", ndays=5)
 #' 
 #' @export
+#' 
 nday.consec.temp.mean <- function(daily.temp, date.factor, ndays, freq.fun="max", center.mean.on.last.day=FALSE) {
   if(ndays == 1) {
     return(suppressWarnings(tapply.fast(daily.temp, date.factor, mean, na.rm=TRUE)))

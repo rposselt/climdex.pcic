@@ -114,10 +114,19 @@ climdex.pcic.test.percent.days.op.threshold <- function() {
   prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year", "jday")]), format="%Y %j", cal="gregorian")
   
   ## Load the data in.
-  ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP, ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION, tmax.dates, tmin.dates, prec.dates, base.range=c(1981, 1990))
+  ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP, 
+                         tmin=ec.1018935.tmin$MIN_TEMP, 
+                         prec=ec.1018935.prec$ONE_DAY_PRECIPITATION, 
+                         tmax.dates=tmax.dates, 
+                         tmin.dates=tmin.dates, 
+                         prec.dates=prec.dates, 
+                         base.range=c(1981, 1990))
  
   ## Compute monthly tx90p on example data.
-  tx90p <- percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors$monthly, ci@quantiles$tmax$outbase$q90, ci@quantiles$tmax$inbase$q90, ci@base.range, ">", ci@max.missing.days['monthly']) * ci@namasks$monthly$tmax
+  tx90p <- percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, 
+                                     ci@date.factors$monthly, ci@quantiles$tmax$outbase$q90, 
+                                     ci@quantiles$tmax$inbase$q90, ci@base.range, ">", 
+                                     ci@max.missing.days['monthly']) * ci@namasks$monthly$tmax
 
   ## Check this against the known-valid data.
   if(!is.x86)
@@ -131,10 +140,17 @@ climdex.pcic.test.growing.season.length <- function() {
  prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year", "jday")]), format="%Y %j", cal="gregorian")
  
  ## Load the data in.
- ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP, ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION, tmax.dates, tmin.dates, prec.dates, base.range=c(1981, 1990))
+ ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP, 
+                        tmin=ec.1018935.tmin$MIN_TEMP, 
+                        prec=ec.1018935.prec$ONE_DAY_PRECIPITATION, 
+                        tmax.dates=tmax.dates, 
+                        tmin.dates=tmin.dates, 
+                        prec.dates=prec.dates, 
+                        base.range=c(1981, 1990))
  
  ## Create an annual timeseries of the growing season length in days.
- gsl <- growing.season.length(ci@data$tavg, ci@date.factors$annual, ci@dates, ci@northern.hemisphere, gsl.mode="GSL") * ci@namasks$annual$tavg
+ gsl <- growing.season.length(ci@data$tavg, ci@date.factors$annual, ci@dates, 
+                              ci@northern.hemisphere, gsl.mode="GSL") * ci@namasks$annual$tavg
 
  ## Check this against known-valid data.
  checkEquals(ec.1018935.gsl, gsl)
@@ -200,7 +216,13 @@ climdex.pcic.test.bootstrap.quantiles <- function() {
   prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year", "jday")]), format="%Y %j", cal="gregorian")
   
   ## Load the data in.
-  ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP, ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION, tmax.dates, tmin.dates, prec.dates, base.range=c(1981, 1990))
+  ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP, 
+                         tmin=ec.1018935.tmin$MIN_TEMP, 
+                         prec=ec.1018935.prec$ONE_DAY_PRECIPITATION, 
+                         tmax.dates=tmax.dates, 
+                         tmin.dates=tmin.dates, 
+                         prec.dates=prec.dates, 
+                         base.range=c(1981, 1990))
   
   ## Check quantiles for 10/90 for tmin/tmax
   for(var in c("tmin", "tmax")) {

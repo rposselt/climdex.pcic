@@ -11,10 +11,8 @@
 #' @param ci Object of type climdexInput (representing the daily mean cloud cover in octa or percent)
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the time series of mean cloud cover.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription The mean cloud cover measured within a period.
-#' @template get_generic_example
 #' 
 #' @export
 climdex.cloud_mean <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
@@ -33,10 +31,8 @@ climdex.cloud_mean <- function(ci,freq=c("annual","halfyear","seasonal","monthly
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @param unit unit of the cloud cover. Allowed are: "octa" or "percent". Default: "octa".
 #' @return A vector containing the number of mostly cloudy days.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription The number of mostly cloudy days (Cloud cover >= 6octa / 80%) within a period.
-#' @template get_generic_example
 #' 
 #' @export
 climdex.cloud_cloudy <- function(ci,freq=c("annual","halfyear","seasonal","monthly"),unit="octa") { 
@@ -63,10 +59,8 @@ climdex.cloud_cloudy <- function(ci,freq=c("annual","halfyear","seasonal","month
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @param unit unit of the cloud cover. Allowed are: "octa" or "percent". Default: "octa".
 #' @return A vector containing the number of mostly sunny days.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription The number of mostly sunny days (Cloud cover <= 2octa / 20%) within a period.
-#' @template get_generic_example
 #' 
 #' @export
 climdex.cloud_sunny <- function(ci,freq=c("annual","halfyear","seasonal","monthly"),unit="octa") { 

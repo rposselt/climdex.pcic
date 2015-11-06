@@ -164,23 +164,10 @@ valid.climdexInput <- function(x) {
 #' }
 #' @seealso \code{\link{climdexInput.csv}}, \code{\link{climdexInput.raw}}.
 #' @keywords climate ts
-#' @examples
-#' library(PCICt)
-#' 
-#' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' 
-#' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' @template get_generic_example_base
 #' 
 #' @export
+#' 
 setClass("climdexInput",
          representation(data = "list",
                         quantiles = "environment",
@@ -283,19 +270,20 @@ get.num.days.in.range <- function(x, date.range) {
 
 
 ## Check that arguments to climdexInput.raw et al are complete enough and valid enough.
-check.basic.argument.validity <- function(tmax, tmax.dates,
-                                          tmin, tmin.dates, 
+check.basic.argument.validity <- function(tmax=NULL, tmax.dates=NULL,
+                                          tmin=NULL, tmin.dates=NULL, 
                                           tavg=NULL, tavg.dates=NULL,
-                                          prec, prec.dates, 
-                                          snow, snow.dates,
-                                          snow_new, snow_new.dates,
-                                          wind, wind.dates,
-                                          wind_gust, wind_gust.dates,
-                                          wind_dir, wind_dir.dates,
-                                          cloud, cloud.dates,
-                                          sun, sun.dates,
-                                          sun_rel, sun_rel.dates,
-                                          base.range=c(1961, 1990), n=5) {
+                                          prec=NULL, prec.dates=NULL,
+                                          snow=NULL, snow.dates=NULL,
+                                          snow_new=NULL, snow_new.dates=NULL,
+                                          wind=NULL, wind.dates=NULL,
+                                          wind_gust=NULL, wind_gust.dates=NULL,
+                                          wind_dir=NULL, wind_dir.dates=NULL,
+                                          cloud=NULL, cloud.dates=NULL,
+                                          sun=NULL, sun.dates=NULL,
+                                          sun_rel=NULL, sun_rel.dates=NULL,
+                                          base.range=c(1961, 1990), 
+                                          n=5) {
   
   check.var <- function(var, var.dates, var.name) {
     if(is.null(var) != is.null(var.dates))
@@ -412,26 +400,32 @@ get.prec.var.quantiles <- function(filled.prec, date.series, bs.date.range, qtil
 #' @examples
 #' library(PCICt)
 #' 
-#' ## Create a climdexInput object from some data already loaded in and
-#' ## ready to go.
-#' 
 #' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year","jday")]), format="%Y %j", cal="gregorian")
 #' 
 #' ## Load the data in.
-#' quantiles <- get.outofbase.quantiles(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' ci <- get.outofbase.quantiles(tmax=ec.1018935.tmax$MAX_TEMP,
+#'                               tmin=ec.1018935.tmin$MIN_TEMP, 
+#'                               prec=ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#'                               tmax.dates=tmax.dates, 
+#'                               tmin.dates=tmin.dates, 
+#'                               prec.dates=prec.dates, 
+#'                               base.range=c(1971, 2000))
 #'
 #' @export
-get.outofbase.quantiles <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=NULL, tmin.dates=NULL, prec.dates=NULL, base.range=c(1961, 1990), n=5, temp.qtiles=c(0.10, 0.90), prec.qtiles=c(0.95, 0.99), min.base.data.fraction.present=0.1) {
+get.outofbase.quantiles <- function(tmax=NULL, tmin=NULL, prec=NULL, 
+                                    tmax.dates=NULL, tmin.dates=NULL, prec.dates=NULL, 
+                                    base.range=c(1961, 1990), n=5, 
+                                    temp.qtiles=c(0.10, 0.90), prec.qtiles=c(0.95, 0.99), 
+                                    min.base.data.fraction.present=0.1) {
   days.threshold <- 359
-  check.basic.argument.validity(tmax, tmin, prec, tmax.dates, tmin.dates, prec.dates, base.range, n)
+  check.basic.argument.validity(tmax=tmax, tmax.dates=tmax.dates,
+                                tmin=tmin, tmin.dates=tmin.dates,
+                                prec=prec, prec.dates=prec.dates, 
+                                base.range=base.range, 
+                                n=n)
   
   d.list <- list(tmin.dates, tmax.dates, prec.dates)
   all.dates <- do.call(c, d.list[!sapply(d.list, is.null)])
@@ -549,24 +543,7 @@ get.outofbase.quantiles <- function(tmax=NULL, tmin=NULL, prec=NULL, tmax.dates=
 #' @note Units are assumed to be mm/day for precipitation and degrees Celsius
 #' for temperature. No units conversion is performed internally.
 #' 
-#' @examples
-#' library(PCICt)
-#'
-#' ## Create a climdexInput object from some data already loaded in and
-#' ## ready to go.
-#' 
-#' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' 
-#' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' @template get_generic_example_base
 #'
 #' @export
 climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL, 
@@ -586,19 +563,20 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
                              max.missing.days=c(annual=15, halfyear=10, seasonal=8, monthly=3), 
                              min.base.data.fraction.present=0.1) {
   ## Make sure all of these arguments are valid...
-  check.basic.argument.validity(tmax, tmax.dates, 
-                                tmin, tmin.dates,
-                                tavg, tavg.dates,
-                                prec, prec.dates,
-                                snow, snow.dates,
-                                snow_new, snow_new.dates,
-                                wind, wind.dates,
-                                wind_gust, wind_gust.dates,
-                                wind_dir, wind_dir.dates,
-                                cloud, cloud.dates,
-                                sun, sun.dates,
-                                sun_rel, sun_rel.dates,
-                                base.range, n)
+  check.basic.argument.validity(tmax=tmax, tmax.dates=tmax.dates, 
+                                tmin=tmin, tmin.dates=tmin.dates,
+                                tavg=tavg, tavg.dates=tavg.dates,
+                                prec=prec, prec.dates=prec.dates,
+                                snow=snow, snow.dates=snow.dates,
+                                snow_new=snow_new, snow_new.dates=snow_new.dates,
+                                wind=wind, wind.dates=wind.dates,
+                                wind_gust=wind_gust, wind_gust.dates=wind_gust.dates,
+                                wind_dir=wind_dir, wind_dir.dates=wind_dir.dates,
+                                cloud=cloud, cloud.dates=cloud.dates,
+                                sun=sun, sun.dates=sun.dates,
+                                sun_rel=sun_rel, sun_rel.dates=sun_rel.dates,
+                                base.range=base.range, 
+                                n=n)
 
   stopifnot(length(max.missing.days) == 4 && 
               all(c("annual", "halfyear", "seasonal", "monthly") %in% names(max.missing.days)))
@@ -765,8 +743,16 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
 #' 
 #' @param tmax.file Name of file containing daily maximum temperature data.
 #' @param tmin.file Name of file containing daily minimum temperature data.
-#' @param prec.file Name of file containing daily total precipitation data.
 #' @param tavg.file Name of file containing daily mean temperature data.
+#' @param prec.file Name of file containing daily total precipitation data.
+#' @param snow.file Name of file containing daily mean snow height data.
+#' @param snow_new.file Name of file containing daily mean new snow height data.
+#' @param wind.file Name of file containing daily mean wind speed data.
+#' @param wind_gust.file Name of file containing daily wind gust data.
+#' @param wind_dir.file Name of file containing daily mean wind direction data.
+#' @param cloud.file Name of file containing daily mean cloud cover data.
+#' @param sun.file Name of file containing daily mean sunshine duration data.
+#' @param sun_rel.file Name of file containing daily mean relative sunshine duration data.
 #' @param data.columns Column names for tmin, tmax, and prec data.
 #' @param date.types Column names for tmin, tmax, and prec data (see notes).
 #' @param na.strings Strings used for NA values; passed to
@@ -863,6 +849,7 @@ climdexInput.csv <- function(tmax.file=NULL, tmin.file=NULL, tavg.file=NULL, pre
 #' 
 #' @param ci Object of type climdexInput.
 #' @return A vector containing the number of frost days for each year.
+#' 
 #' @template generic_seealso_references
 #' 
 #' @templateVar cdxvar fd
@@ -1112,6 +1099,7 @@ climdex.tn10p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal"
   return(percent.days.op.threshold(ci@data$tmin, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
                                    ci@quantiles$tmin$outbase$q10, ci@quantiles$tmin$inbase$q10, ci@base.range, "<", 
                                    ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmin) 
+  return(climdex.tnnp(ci,freq=freq,quant=0.1,op="<"))
 }
 
 #' Percent of Values Below 10th Percentile Daily Maximum Temperature
@@ -1134,9 +1122,10 @@ climdex.tn10p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal"
 #' @export
 climdex.tx10p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
   stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax))
-  return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
-                                   ci@quantiles$tmax$outbase$q10, ci@quantiles$tmax$inbase$q10, ci@base.range, "<", 
-                                   ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) 
+#   return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
+#                                    ci@quantiles$tmax$outbase$q10, ci@quantiles$tmax$inbase$q10, ci@base.range, "<", 
+#                                    ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) 
+  return(climdex.txnp(ci,freq=freq,quant=0.1,op="<"))
 }
 
 #' Percent of Values Above 90th Percentile Daily Minimum Temperature
@@ -1159,9 +1148,10 @@ climdex.tx10p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal"
 #' @export
 climdex.tn90p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
   stopifnot(!is.null(ci@data$tmin) && !is.null(ci@quantiles$tmin))
-  return(percent.days.op.threshold(ci@data$tmin, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
-                                   ci@quantiles$tmin$outbase$q90, ci@quantiles$tmin$inbase$q90, ci@base.range, ">", 
-                                   ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmin) 
+#   return(percent.days.op.threshold(ci@data$tmin, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
+#                                    ci@quantiles$tmin$outbase$q90, ci@quantiles$tmin$inbase$q90, ci@base.range, ">", 
+#                                    ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmin) 
+  return(climdex.tnnp(ci,freq=freq,quant=0.9,op=">"))
 }
 
 #' Percent of Values Above 90th Percentile Daily Maximum Temperature
@@ -1184,9 +1174,10 @@ climdex.tn90p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal"
 #' @export
 climdex.tx90p <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal")) { 
   stopifnot(!is.null(ci@data$tmax) && !is.null(ci@quantiles$tmax))
-  return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
-                                   ci@quantiles$tmax$outbase$q90, ci@quantiles$tmax$inbase$q90, ci@base.range, ">", 
-                                   ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) 
+#   return(percent.days.op.threshold(ci@data$tmax, ci@dates, ci@jdays, ci@date.factors[[match.arg(freq)]], 
+#                                    ci@quantiles$tmax$outbase$q90, ci@quantiles$tmax$inbase$q90, ci@base.range, ">", 
+#                                    ci@max.missing.days[match.arg(freq)]) * ci@namasks[[match.arg(freq)]]$tmax) 
+  return(climdex.txnp(ci,freq=freq,quant=0.9,op=">"))
 }
 
 #' @title Warm Spell Duration Index
@@ -1306,6 +1297,8 @@ climdex.rx1day <- function(ci, freq=c("monthly", "annual", "halfyear", "seasonal
 #' 
 #' @param ci Object of type climdexInput.
 #' @param freq Time frequency to aggregate to.
+#' @param center.mean.on.last.day Whether to center the n-day running mean on
+#' the last day of the series, instead of the middle day.
 #' @template rx5day_common
 #' @template generic_seealso_references
 #' @templateVar cdxvar rx5day
@@ -1509,21 +1502,24 @@ climdex.prcptot <- function(ci) { stopifnot(!is.null(ci@data$prec)); return(tota
 #' ## ready to go.
 #'
 #' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year","jday")]), format="%Y %j", cal="gregorian")
 #'
 #' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP,
+#'                        tmin=ec.1018935.tmin$MIN_TEMP, 
+#'                        prec=ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#'                        tmax.dates=tmax.dates,
+#'                        tmin.dates=tmin.dates, 
+#'                        prec.dates=prec.dates, 
+#'                        base.range=c(1971, 2000))
 #'
 #' ## Get list of functions which might be run.
 #' func.names <- climdex.get.available.indices(ci)
+#' 
 #' @export
+#' 
 climdex.get.available.indices <- function(ci, function.names=TRUE) {
   available.indices <- list(tmax=c('su', 'id', 'txx', 'txn', 'tx10p', 'tx90p', 'wsdi','txndaymin','txndaymax'),
                             tmin=c('fd', 'tr', 'tnx', 'tnn', 'tn10p', 'tn90p', 'csdi','tnndaymin','tnndaymax'),
@@ -1605,19 +1601,20 @@ get.series.lengths.at.ends <- function(x, na.value=FALSE) {
 #' @keywords ts climate
 #' @examples
 #' library(PCICt)
-#'
+#' 
 #' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year","jday")]), format="%Y %j", cal="gregorian")
 #' 
 #' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP,
+#'                        tmin=ec.1018935.tmin$MIN_TEMP, 
+#'                        prec=ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#'                        tmax.dates=tmax.dates, 
+#'                        tmin.dates=tmin.dates, 
+#'                        prec.dates=prec.dates, 
+#'                        base.range=c(1971, 2000))
 #' 
 #' ## Calculate frost days.
 #' fd <- number.days.op.threshold(ci@@data$tmin,
@@ -1666,21 +1663,19 @@ number.days.op.threshold <- function(temp, date.factor, threshold, op="<") {
 #' @examples
 #' library(PCICt)
 #' 
-#' ## Create a climdexInput object from some data already loaded in and
-#' ## ready to go.
-#' 
 #' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year","jday")]), format="%Y %j", cal="gregorian")
 #' 
 #' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP,
+#'                        tmin=ec.1018935.tmin$MIN_TEMP, 
+#'                        prec=ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#'                        tmax.dates=tmax.dates, 
+#'                        tmin.dates=tmin.dates, 
+#'                        prec.dates=prec.dates, 
+#'                        base.range=c(1971, 2000))
 #' 
 #' ## Create an annual timeseries of the growing season length in days.
 #' gsl <- growing.season.length(ci@@data$tavg, ci@@date.factors$annual, ci@@dates,
@@ -1750,17 +1745,18 @@ growing.season.length <- function(daily.mean.temp, date.factor, dates, northern.
 #' library(PCICt)
 #' 
 #' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year","jday")]), format="%Y %j", cal="gregorian")
 #' 
 #' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP,
+#'                        tmin=ec.1018935.tmin$MIN_TEMP, 
+#'                        prec=ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#'                        tmax.dates=tmax.dates, 
+#'                        tmin.dates=tmin.dates, 
+#'                        prec.dates=prec.dates, 
+#'                        base.range=c(1971, 2000))
 #' 
 #' ## Compute monthly tx90p.
 #' tx90p <- percent.days.op.threshold(ci@@data$tmax, ci@@dates, ci@@jdays,
@@ -1902,17 +1898,18 @@ mean.daily.temp.range <- function(daily.max.temp, daily.min.temp, date.factor) {
 #' library(PCICt)
 #' 
 #' ## Parse the dates into PCICt.
-#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
-#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year",
-#' "jday")]), format="%Y %j", cal="gregorian")
+#' tmax.dates <- as.PCICt(do.call(paste, ec.1018935.tmax[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' tmin.dates <- as.PCICt(do.call(paste, ec.1018935.tmin[,c("year","jday")]), format="%Y %j", cal="gregorian")
+#' prec.dates <- as.PCICt(do.call(paste, ec.1018935.prec[,c("year","jday")]), format="%Y %j", cal="gregorian")
 #' 
 #' ## Load the data in.
-#' ci <- climdexInput.raw(ec.1018935.tmax$MAX_TEMP,
-#' ec.1018935.tmin$MIN_TEMP, ec.1018935.prec$ONE_DAY_PRECIPITATION,
-#' tmax.dates, tmin.dates, prec.dates, base.range=c(1971, 2000))
+#' ci <- climdexInput.raw(tmax=ec.1018935.tmax$MAX_TEMP,
+#'                        tmin=ec.1018935.tmin$MIN_TEMP, 
+#'                        prec=ec.1018935.prec$ONE_DAY_PRECIPITATION,
+#'                        tmax.dates=tmax.dates, 
+#'                        tmin.dates=tmin.dates, 
+#'                        prec.dates=prec.dates, 
+#'                        base.range=c(1971, 2000))
 #' 
 #' ## Compute rx5day on a monthly basis.
 #' rx5day <- nday.consec.prec.max(ci@@data$prec, ci@@date.factors$monthly, 5)

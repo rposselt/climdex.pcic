@@ -15,5 +15,3 @@
 #'                        prec.dates=prec.dates, 
 #'                        base.range=c(1971, 2000))
 #'
-#' ## Create <%=cdxdescription%>
-#' <%=cdxvar%> <- climdex.<%=cdxvar%>(ci)

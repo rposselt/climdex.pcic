@@ -11,12 +11,11 @@
 #' @param ci Object of type climdexInput (representing the daily mean wind speed in [m/s])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the time series of mean wind speed.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription The mean wind speed measured within a period.
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_mean <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind))
   return(tapply.fast(ci@data$wind, ci@date.factors[[match.arg(freq)]], mean, na.rm=TRUE) * ci@namasks[[match.arg(freq)]]$wind)
@@ -32,12 +31,11 @@ climdex.wind_mean <- function(ci,freq=c("annual","halfyear","seasonal","monthly"
 #' @param ci Object of type climdexInput (representing the daily mean wind speed in [m/s])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the number of calm days.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription The number of days with mean wind lower than or equal 2 m/s.
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_calmdays <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind))
   return(number.days.op.threshold(temp=ci@data$wind, date.factor=ci@date.factors[[match.arg(freq)]], 
@@ -54,12 +52,11 @@ climdex.wind_calmdays <- function(ci,freq=c("annual","halfyear","seasonal","mont
 #' @param ci Object of type climdexInput (representing the daily mean wind speed in [m/s])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the number of calm days.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription The number of days with mean wind greater than or equal 10.8 m/s (~6 Bft).
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_windydays <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind))
   return(number.days.op.threshold(temp=ci@data$wind, date.factor=ci@date.factors[[match.arg(freq)]], 
@@ -76,12 +73,11 @@ climdex.wind_windydays <- function(ci,freq=c("annual","halfyear","seasonal","mon
 #' @param ci Object of type climdexInput (representing the daily maximum wind gust in [m/s])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the number of storm days.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind_gust
-#' @templateVar cdxdescription The number of days with wind gusts greater than or equal 20.8 m/s (75 km/h).
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_stormdays <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind_gust))
   return(number.days.op.threshold(temp=ci@data$wind_gust, date.factor=ci@date.factors[[match.arg(freq)]], 
@@ -98,12 +94,11 @@ climdex.wind_stormdays <- function(ci,freq=c("annual","halfyear","seasonal","mon
 #' @param ci Object of type climdexInput (representing the daily maximum wind gust in [m/s])
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the maximum of the maximum daily wind gust.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind_gust
-#' @templateVar cdxdescription The maximum of the maximum daily wind gust.
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_maxgust <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind_gust))
   return(tapply.fast(ci@data$wind_gust, ci@date.factors[[match.arg(freq)]], max, na.rm=TRUE) * 
@@ -115,17 +110,16 @@ climdex.wind_maxgust <- function(ci,freq=c("annual","halfyear","seasonal","month
 #' This function computes the climdex index WIND_NORTHERLY.
 #' 
 #' This function takes a climdexInput object as input and computes the 
-#' WIND_NORTHERLY index: Days with northerly wind (-45° (315°) < wind_dir <= 45°).
+#' WIND_NORTHERLY index: Days with northerly wind (-45deg (315deg) < wind_dir <= 45deg).
 #' 
-#' @param ci Object of type climdexInput (representing the daily mean wind direction in [°] with 0° being wind from north)
+#' @param ci Object of type climdexInput (representing the daily mean wind direction in [deg] with 0deg being wind from north)
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the time series of days with northerly winds.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription Days with northerly wind.
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_northerly <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind_dir))
   wind_northerly <- (number.days.op.threshold(temp=ci@data$wind_dir, date.factor=ci@date.factors[[match.arg(freq)]], 
@@ -140,17 +134,16 @@ climdex.wind_northerly <- function(ci,freq=c("annual","halfyear","seasonal","mon
 #' This function computes the climdex index WIND_EASTERLY.
 #' 
 #' This function takes a climdexInput object as input and computes the 
-#' WIND_EASTERLY index: Days with easterly wind (45° < wind_dir <= 135°).
+#' WIND_EASTERLY index: Days with easterly wind (45deg < wind_dir <= 135deg).
 #' 
-#' @param ci Object of type climdexInput (representing the daily mean wind direction in [°] with 90° being wind from east)
+#' @param ci Object of type climdexInput (representing the daily mean wind direction in [deg] with 90deg being wind from east)
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the time series of days with easterly winds.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription Days with easterly wind.
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_easterly <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind_dir))
   wind_easterly <- (number.days.op.threshold(temp=ci@data$wind_dir, date.factor=ci@date.factors[[match.arg(freq)]], 
@@ -165,17 +158,16 @@ climdex.wind_easterly <- function(ci,freq=c("annual","halfyear","seasonal","mont
 #' This function computes the climdex index WIND_SOUTHERLY.
 #' 
 #' This function takes a climdexInput object as input and computes the 
-#' WIND_SOUTHERLY index: Days with southerly wind (135° < wind_dir <= 225°).
+#' WIND_SOUTHERLY index: Days with southerly wind (135deg < wind_dir <= 225deg).
 #' 
-#' @param ci Object of type climdexInput (representing the daily mean wind direction in [°] with 180° being wind from south)
+#' @param ci Object of type climdexInput (representing the daily mean wind direction in [deg] with 180deg being wind from south)
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the time series of days with southerly winds.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription Days with southerly wind.
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_southerly <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind_dir))
   wind_southerly <- (number.days.op.threshold(temp=ci@data$wind_dir, date.factor=ci@date.factors[[match.arg(freq)]], 
@@ -190,17 +182,16 @@ climdex.wind_southerly <- function(ci,freq=c("annual","halfyear","seasonal","mon
 #' This function computes the climdex index WIND_WESTERLY
 #' 
 #' This function takes a climdexInput object as input and computes the 
-#' WIND_WESTERLY index: Days with westerly wind (225° < wind_dir <= 315°).
+#' WIND_WESTERLY index: Days with westerly wind (225deg < wind_dir <= 315deg).
 #' 
-#' @param ci Object of type climdexInput (representing the daily mean wind direction in [°] with 270° being wind from west)
+#' @param ci Object of type climdexInput (representing the daily mean wind direction in [deg] with 270deg being wind from west)
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear", "seasonal" or "monthly". Default: "annual".
 #' @return A vector containing the time series of days with westerly winds.
+#' 
 #' @template generic_seealso_references 
-#' @templateVar cdxvar wind
-#' @templateVar cdxdescription Days with westerly wind.
-#' @template get_generic_example
 #' 
 #' @export
+#' 
 climdex.wind_westerly <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind_dir))
   wind_westerly <- (number.days.op.threshold(temp=ci@data$wind_dir, date.factor=ci@date.factors[[match.arg(freq)]], 

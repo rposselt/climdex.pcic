@@ -12,10 +12,9 @@
 #' @param threshold Snow depth threshhold [in cm]. (Default: 1)
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear" or "seasonal". Default: "annual".
 #' @return A vector containing an annual timeseries of the number of snow days.
+#' 
 #' @template generic_seealso_references
-#' @templateVar cdxvar snowtot
-#' @templateVar cdxdescription an annual timeseries the number of snow days.
-#' @template get_generic_example
+#' 
 #' 
 #' @export
 #' 
@@ -35,10 +34,9 @@ climdex.snow_days <- function(ci,threshold=1,freq=c("annual","halfyear","seasona
 #' @param ci Object of type climdexInput (representing the daily snow depth timeseries in [cm]).
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear" or "seasonal". Default: "annual".
 #' @return A vector containing an annual timeseries of the maximum snow depth.
+#' 
 #' @template generic_seealso_references
-#' @templateVar cdxvar snow
-#' @templateVar cdxdescription an annual timeseries of the maximum snow depth.
-#' @template get_generic_example
+#' 
 #' 
 #' @export
 #' 
@@ -58,10 +56,8 @@ climdex.snow_max <- function(ci,freq=c("annual","halfyear","seasonal")) {
 #' @param ci Object of type climdexInput (representing the daily snow depth timeseries in [cm]).
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear" or "seasonal". Default: "annual".
 #' @return A vector containing the timeseries of the mean snow depth.
+#' 
 #' @template generic_seealso_references
-#' @templateVar cdxvar snow
-#' @templateVar cdxdescription The mean snow depth measured within a period.
-#' @template get_generic_example
 #' 
 #' @export
 #' 
@@ -82,10 +78,8 @@ climdex.snow_mean <- function(ci,freq=c("annual","halfyear","seasonal")) {
 #' @param threshold Snow depth threshhold [in cm]. (Default: 1)
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear" or "seasonal". Default: "annual".
 #' @return A vector containing the timeseries of the number of new snow days.
+#' 
 #' @template generic_seealso_references
-#' @templateVar cdxvar snow_new
-#' @templateVar cdxdescription an annual timeseries the number of new snow days.
-#' @template get_generic_example
 #' 
 #' @export
 #' 
@@ -105,10 +99,8 @@ climdex.snow_daysnew <- function(ci,threshold=1,freq=c("annual","halfyear","seas
 #' @param ci Object of type climdexInput (representing the daily snowfall timeseries in [cm]).
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear" or "seasonal". Default: "annual".
 #' @return A vector containing the timeseries of the maximum snowfall.
+#' 
 #' @template generic_seealso_references
-#' @templateVar cdxvar snow_new
-#' @templateVar cdxdescription an annual timeseries of the maximum snowfall.
-#' @template get_generic_example
 #' 
 #' @export
 #' 
@@ -128,10 +120,8 @@ climdex.snow_maxnew <- function(ci,freq=c("annual","halfyear","seasonal")) {
 #' @param ci Object of type climdexInput (representing the daily snowfall timeseries in [cm]).
 #' @param freq Time frequency to aggregate to. Allowed are: "annual","halfyear" or "seasonal". Default: "annual".
 #' @return A vector containing the timeseries of the snowfall sum.
+#' 
 #' @template generic_seealso_references
-#' @templateVar cdxvar snow_new
-#' @templateVar cdxdescription an annual timeseries of the snowfall sum.
-#' @template get_generic_example
 #' 
 #' @export
 #' 
