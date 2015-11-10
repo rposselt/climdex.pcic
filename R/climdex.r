@@ -653,30 +653,31 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
                   seasonal=lapply(filled.list, get.na.mask, date.factors$seasonal, max.missing.days['seasonal']),
                   monthly=lapply(filled.list, get.na.mask, date.factors$monthly, max.missing.days['monthly']))
   ## if there is a missing month in a year (season, halfyear), then set this year (season, halfyear) also to missing
-  for (na.freq in c("annual","halfyear","seasonal")){  
-    namasks[[na.freq]] <- lapply(names(namasks[[na.freq]]), function(v) {
-      ## get the lengths (in months) for each frequency period 
-      ## (e.g., for halfyear the lengths should be usually 6 months, except maybe for the start and end halfyear)
-      length.freq <- as.numeric(tapply(date.factors$monthly,
-                                       date.factors[[na.freq]],
-                                       function(x){uni.x<-unique(x)
-                                                   return(length(uni.x))},simplify=T))
-      ## the indeces for each of the frequency periods
-      ## with regard to the monthly time series 
-      ## (i.e., the index of the period is repeated n-month times per period)
-      index.freq <- unlist(apply(cbind(x=c(1:length(length.freq)),y=length.freq),c(1),
-                              function(x){return(rep(x[1],times=x[2]))}))
-      ## combine monthly NA time series with period NA time series
-      ## as soon as there are 0's around the result is 0 (i.e., NA)
-      ## --> as soon as there is one missing month the whole period is also marked as missing
-      d <- namasks[[na.freq]][[v]] * as.numeric(tapply(namasks$monthly[[v]], index.freq, prod))
-      ## remove all dimension names
-      dimnames(d) <- dim(d) <- NULL
-      ## return corrected NA time series
-      return(d) }
-    )
-    names(namasks[[na.freq]]) <- names(namasks$monthly)    
-  }
+  ## commented out after some discussions at KNMI
+#   for (na.freq in c("annual","halfyear","seasonal")){  
+#     namasks[[na.freq]] <- lapply(names(namasks[[na.freq]]), function(v) {
+#       ## get the lengths (in months) for each frequency period 
+#       ## (e.g., for halfyear the lengths should be usually 6 months, except maybe for the start and end halfyear)
+#       length.freq <- as.numeric(tapply(date.factors$monthly,
+#                                        date.factors[[na.freq]],
+#                                        function(x){uni.x<-unique(x)
+#                                                    return(length(uni.x))},simplify=T))
+#       ## the indeces for each of the frequency periods
+#       ## with regard to the monthly time series 
+#       ## (i.e., the index of the period is repeated n-month times per period)
+#       index.freq <- unlist(apply(cbind(x=c(1:length(length.freq)),y=length.freq),c(1),
+#                               function(x){return(rep(x[1],times=x[2]))}))
+#       ## combine monthly NA time series with period NA time series
+#       ## as soon as there are 0's around the result is 0 (i.e., NA)
+#       ## --> as soon as there is one missing month the whole period is also marked as missing
+#       d <- namasks[[na.freq]][[v]] * as.numeric(tapply(namasks$monthly[[v]], index.freq, prod))
+#       ## remove all dimension names
+#       dimnames(d) <- dim(d) <- NULL
+#       ## return corrected NA time series
+#       return(d) }
+#     )
+#     names(namasks[[na.freq]]) <- names(namasks$monthly)    
+#   }
   
   ## Pad data passed as base if we're missing endpoints...
   if(!have.quantiles) {
