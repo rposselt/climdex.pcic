@@ -75,6 +75,6 @@ climdex.sun_cloudy <- function(ci,freq=c("annual","halfyear","seasonal","monthly
 #' @export
 climdex.sun_sunny <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$sun))
-  return(number.days.op.threshold(temp=ci@data$sun, date.factor=ci@date.factors[[match.arg(freq)]], 
+  return(number.days.op.threshold(temp=ci@data$sun_rel, date.factor=ci@date.factors[[match.arg(freq)]], 
                                   threshold=80, op="<") * ci@namasks[[match.arg(freq)]]$sun)
 }
