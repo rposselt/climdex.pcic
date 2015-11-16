@@ -616,7 +616,7 @@ climdexInput.raw <- function(tmax=NULL, tmax.dates=NULL,
   # winter months OND of prev year and JFM of next year belong together, Year belongs to Jan => increase year of prev OND by 1
   half.years <- date.years
   half.half  <- (date.months+2) %/% 6 + 1
-  half.idx   <- which(half.half == 0)
+  half.idx   <- which(half.half == 3)
   half.years[half.idx] <- half.years[half.idx]+1
   half.half[half.idx]  <- 1
   # set up date.factors list
