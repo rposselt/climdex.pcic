@@ -38,7 +38,7 @@ climdex.wind_mean <- function(ci,freq=c("annual","halfyear","seasonal","monthly"
 #' 
 climdex.wind_calmdays <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind))
-  return(number.days.op.threshold(temp=ci@data$wind*0.1, date.factor=ci@date.factors[[match.arg(freq)]], 
+  return(number.days.op.threshold(temp=ci@data$wind, date.factor=ci@date.factors[[match.arg(freq)]], 
                                   threshold=2, op="<=") * ci@namasks[[match.arg(freq)]]$wind)
 }
 
@@ -59,7 +59,7 @@ climdex.wind_calmdays <- function(ci,freq=c("annual","halfyear","seasonal","mont
 #' 
 climdex.wind_windydays <- function(ci,freq=c("annual","halfyear","seasonal","monthly")) { 
   stopifnot(!is.null(ci@data$wind))
-  return(number.days.op.threshold(temp=ci@data$wind*0.1, date.factor=ci@date.factors[[match.arg(freq)]], 
+  return(number.days.op.threshold(temp=ci@data$wind, date.factor=ci@date.factors[[match.arg(freq)]], 
                                   threshold=10.8, op=">=") * ci@namasks[[match.arg(freq)]]$wind)
 }
 

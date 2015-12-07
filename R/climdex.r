@@ -858,7 +858,10 @@ climdexInput.csv <- function(tmax.file=NULL, tmin.file=NULL, tavg.file=NULL, pre
 #' @template get_generic_example
 #' 
 #' @export
-climdex.fd <- function(ci) { stopifnot(!is.null(ci@data$tmin)); return(number.days.op.threshold(ci@data$tmin, ci@date.factors$annual, 0, "<") * ci@namasks$annual$tmin) }
+climdex.fd <- function(ci) { 
+  stopifnot(!is.null(ci@data$tmin))
+  return(number.days.op.threshold(ci@data$tmin, ci@date.factors$annual, 0, "<") * ci@namasks$annual$tmin)
+}
 
 #' Summer Days
 #' 
