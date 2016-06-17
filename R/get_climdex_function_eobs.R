@@ -1,4 +1,3 @@
-
 #' Returns a list of Climdex variables given constraints
 #' Added: monthly only for SPI indices
 #' Changed annual only is changed 
@@ -28,7 +27,7 @@ get.climdex.variable.list.eobs <- function(source.data.present, time.resolution=
   #freq.lists <- list(c("mon", "yr"), c("yr"))
   freq.lists <- list(c("mon", "yr"), c("yr"),c("mon"))
   
-  helper_fun <- function(climdex.vars, annual.only, month.only) {
+  helper_fun <- function(climdex.vars, annual.only, monthly.only) {
     if (climdex.vars %in% annual.only) {
       return(paste(climdex.vars, 'yr', sep = '_'))
     } else if (climdex.vars %in% monthly.only) {
@@ -44,7 +43,7 @@ get.climdex.variable.list.eobs <- function(source.data.present, time.resolution=
 #                 monthly=paste(climdex.vars[!(climdex.vars %in% annual.only)], "mon", sep="_"))
   
   dat <- switch(time.res,
-                all=unlist(lapply(climdex.vars, helper_fun, annual.only = annual.only, month.only = month.only)),
+                all=unlist(lapply(climdex.vars, helper_fun, annual.only = annual.only, monthly.only = monthly.only)),
                 annual=paste(climdex.vars[!(climdex.vars %in% monthly.only)], "yr", sep="_"),
                 monthly=paste(climdex.vars[!(climdex.vars %in% annual.only)], "mon", sep="_"))
   
@@ -255,23 +254,47 @@ get.climdex.variable.metadata.eobs <- function(vars.list, template.filename) {
                          
                          stringsAsFactors=FALSE)
   
-  standard.name.lookup <- c(csuETCCDI="consecutive summer days", cfdETCCDI="consecutive frost days", hd17ETCCDI="heating degree days", hiETCCDI="huglin index", 
-                            spi3ETCCDI="standardized precipitation index",spi6ETCCDI="standardized precipitation index", 
-                            fdETCCDI="number_frost_days", suETCCDI="number_summer_days", idETCCDI="number_icing_days", trETCCDI="number_tropical_nights", gslETCCDI="growing_season_length",
-                            txxETCCDI="maximum_daily_maximum_temperature", tnxETCCDI="maximum_daily_minimum_temperature", txnETCCDI="minimum_daily_maximum_temperature", 
+  standard.name.lookup <- c(csuETCCDI="consecutive summer days", 
+                            cfdETCCDI="consecutive frost days", 
+                            hd17ETCCDI="heating degree days", 
+                            hiETCCDI="huglin index", 
+                            spi3ETCCDI="standardized precipitation index",
+                            spi6ETCCDI="standardized precipitation index", 
+                            fdETCCDI="number_frost_days", 
+                            suETCCDI="number_summer_days", 
+                            idETCCDI="number_icing_days", 
+                            trETCCDI="number_tropical_nights", 
+                            gslETCCDI="growing_season_length",
+                            txxETCCDI="maximum_daily_maximum_temperature", 
+                            tnxETCCDI="maximum_daily_minimum_temperature", 
+                            txnETCCDI="minimum_daily_maximum_temperature", 
                             tnnETCCDI="minimum_daily_minimum_temperature",
-                            tn10pETCCDI="percent_days_when_daily_minimum_temperature_below_10p", tx10pETCCDI="percent_days_when_daily_maximum_temperature_below_10p",
-                            tn90pETCCDI="percent_days_when_daily_minimum_temperature_above_90p", tx90pETCCDI="percent_days_when_daily_maximum_temperature_above_90p",
-                            wsdiETCCDI="warm_spell_duration_index", csdiETCCDI="cold_spell_duration_index", dtrETCCDI="diurnal_temperature_range",
-                            altwsdiETCCDI="warm_spell_duration_index", altcsdiETCCDI="cold_spell_duration_index",
-                            rx1dayETCCDI="maximum_1day_precipitation", rx5dayETCCDI="maximum_5day_precipitation", sdiiETCCDI="simple_precipitation_intensity_index",
-                            r10mmETCCDI="count_days_more_than_10mm_precipitation", r20mmETCCDI="count_days_more_than_20mm_precipitation", r1mmETCCDI="count_days_more_than_1mm_precipitation",
-                            cddETCCDI="maximum_number_consecutive_dry_days", cwdETCCDI="maximum_number_consecutive_wet_days",
-                            altcddETCCDI="maximum_number_consecutive_dry_days", altcwdETCCDI="maximum_number_consecutive_wet_days",
-                            r95pETCCDI="total_precipitation_exceeding_95th_percentile", r99pETCCDI="total_precipitation_exceeding_99th_percentile", prcptotETCCDI="total_wet_day_precipitation")
+                            tn10pETCCDI="percent_days_when_daily_minimum_temperature_below_10p", 
+                            tx10pETCCDI="percent_days_when_daily_maximum_temperature_below_10p",
+                            tn90pETCCDI="percent_days_when_daily_minimum_temperature_above_90p", 
+                            tx90pETCCDI="percent_days_when_daily_maximum_temperature_above_90p",
+                            wsdiETCCDI="warm_spell_duration_index", 
+                            csdiETCCDI="cold_spell_duration_index", 
+                            dtrETCCDI="diurnal_temperature_range",
+                            altwsdiETCCDI="warm_spell_duration_index", 
+                            altcsdiETCCDI="cold_spell_duration_index",
+                            rx1dayETCCDI="maximum_1day_precipitation", 
+                            rx5dayETCCDI="maximum_5day_precipitation", 
+                            sdiiETCCDI="simple_precipitation_intensity_index",
+                            r10mmETCCDI="count_days_more_than_10mm_precipitation", 
+                            r20mmETCCDI="count_days_more_than_20mm_precipitation", 
+                            r1mmETCCDI="count_days_more_than_1mm_precipitation",
+                            cddETCCDI="maximum_number_consecutive_dry_days", 
+                            cwdETCCDI="maximum_number_consecutive_wet_days",
+                            altcddETCCDI="maximum_number_consecutive_dry_days", 
+                            altcwdETCCDI="maximum_number_consecutive_wet_days",
+                            r95pETCCDI="total_precipitation_exceeding_95th_percentile", 
+                            r99pETCCDI="total_precipitation_exceeding_99th_percentile", 
+                            prcptotETCCDI="total_wet_day_precipitation")
   
   all.data$standard.name <- standard.name.lookup[all.data$var.name]
   
-  all.data$filename <- create.climdex.eobs.filenames(get.split.filename.eobs(template.filename), rownames(all.data))
+  ## create.climdex.eobs.filenames, get.split.filename.eobs --> where to find?
+  # all.data$filename <- create.climdex.eobs.filenames(get.split.filename.eobs(template.filename), rownames(all.data))
   return(all.data[vars.list,])
 }
